@@ -1,56 +1,93 @@
 import streamlit as st
 from openai import OpenAI
 
-# Show title and description.
-st.title("💬 Chatbot")
-st.write(
-    "This is a simple chatbot that uses OpenAI's GPT-3.5 model to generate responses. "
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
-    "You can also learn how to build this app step by step by [following our tutorial](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps)."
+st.set_page_config(page_title="Agent Employé IA", page_icon="🤖")
+
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+st.title("🤖 Agent Employé IA – Assistant RH / Paie")
+st.info(
+    "Exemples : 'Pourquoi mon salaire a baissé ?' • "
+    "'Je veux une attestation employeur' • "
+    "'Je pense qu’il y a une erreur sur mon bulletin'"
 )
 
-# Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
-else:
+st.markdown("Posez votre question ou choisissez une action 👇")
 
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+# Boutons rapides
+col1, col2, col3 = st.columns(3)
 
-    # Create a session state variable to store the chat messages. This ensures that the
-    # messages persist across reruns.
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+with col1:
+    if st.button("📄 Comprendre mon bulletin"):
+        st.session_state["pending_input"] = "Pourquoi mon salaire a baissé ce mois-ci ?"
 
-    # Display the existing chat messages via `st.chat_message`.
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+with col2:
+    if st.button("📑 Demander une attestation"):
+        st.session_state["pending_input"] = "Je veux une attestation employeur"
 
-    # Create a chat input field to allow the user to enter a message. This will display
-    # automatically at the bottom of the page.
-    if prompt := st.chat_input("What is up?"):
+with col3:
+    if st.button("⚠️ Signaler une anomalie"):
+        st.session_state["pending_input"] = "Je pense qu’il y a une erreur sur mon bulletin"
 
-        # Store and display the current prompt.
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+SYSTEM_PROMPT = """
+Tu es un assistant RH / paie destiné aux employés.
 
-        # Generate a response using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
-        )
+Règles :
+- Réponds en français.
+- Sois clair, simple, professionnel et rassurant.
+- Vulgarise les termes paie.
+- N’invente jamais d’informations internes.
+- Si une information manque, dis-le clairement.
+- Propose toujours une prochaine étape utile.
+- Si la demande concerne une anomalie, demande :
+  1. le mois concerné
+  2. la ligne concernée
+  3. la différence constatée
+- Si la demande concerne une attestation, demande le type exact.
+- Si la demande concerne une variation de paie, évoque seulement les causes probables :
+  absence, prime, régularisation, acompte, cotisations.
+"""
 
-        # Stream the response to the chat using `st.write_stream`, then store it in 
-        # session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
+
+user_input = st.chat_input("Posez votre question RH / paie...")
+
+if "pending_input" in st.session_state:
+    user_input = st.session_state["pending_input"]
+    del st.session_state["pending_input"]
+
+def build_messages(history, latest_user_message):
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    for m in history:
+        messages.append({"role": m["role"], "content": m["content"]})
+    messages.append({"role": "user", "content": latest_user_message})
+    return messages
+
+if user_input:
+    st.session_state.messages.append({"role": "user", "content": user_input})
+
+    with st.chat_message("user"):
+        st.write(user_input)
+
+    with st.chat_message("assistant"):
+        with st.spinner("Analyse en cours..."):
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=build_messages(st.session_state.messages[:-1], user_input),
+                )
+                answer = response.choices[0].message.content
+            except Exception as e:
+                answer = (
+                    "Je n’ai pas pu contacter le moteur IA pour le moment. "
+                    f"Erreur : {e}"
+                )
+
+            st.write(answer)
+
+    st.session_state.messages.append({"role": "assistant", "content": answer})
