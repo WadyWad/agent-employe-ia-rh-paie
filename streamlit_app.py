@@ -1,1235 +1,833 @@
 import streamlit as st
-from typing import Optional, Dict, List
+from datetime import datetime
+import os
 
 st.set_page_config(
-    page_title="Agent Employé IA",
-    page_icon="🤖",
-    layout="centered"
+    page_title="KAREN — Agent RH / Paie",
+    page_icon="💼",
+    layout="wide",
+    initial_sidebar_state="expanded",
 )
+
+# =========================================================
+# CONFIG UI
+# =========================================================
+APP_TITLE = "KAREN"
+APP_SUBTITLE = "Agent RH / Paie guidé — version premium"
+LOGO_PATH = "logo.png"
+AVATAR_GIF_PATH = "avatar.gif"
+PRIMARY_BLUE = "#0f172a"
+SECONDARY_BLUE = "#1e3a8a"
+ACCENT_RED = "#991b1b"
+BRIGHT_RED = "#dc2626"
+CARD_BG = "#111827"
+TEXT_MAIN = "#f8fafc"
+TEXT_SOFT = "#cbd5e1"
+
+# =========================================================
+# DONNÉES MÉTIER
+# =========================================================
+ENTITIES = [
+    "PSB - Paris School of Business",
+    "IESA Arts & Culture",
+    "Bellecour École",
+    "LISAA",
+    "Strate School of Design",
+    "Atelier de Sèvres",
+    "Cours Florent",
+    "Penninghen",
+    "ESARC",
+    "Digital Campus",
+    "ECV",
+    "Sup de Création",
+    "Narratiiv",
+    "MBA ESG",
+    "ESGCI",
+    "ESG Finance",
+    "ESG Luxe",
+    "ESG Immobilier",
+    "ESG Sport",
+    "ESG Tourisme",
+    "ESG RH",
+    "ESG Marketing",
+    "ESG Communication",
+    "ESG Commerce",
+    "PPA Business School",
+    "MJM Graphic Design",
+    "ICAN",
+    "BRASSART",
+    "Hetic",
+    "Web School Factory",
+    "Le Cordon Bleu Paris",
+    "Atelier Chardon Savard",
+    "EIML Paris",
+    "EBS Paris",
+    "Sup de Pub",
+    "Paris École de Guerre Économique",
+    "EGE",
+    "IPSSI",
+    "EFFICOM",
+    "SUPDEWEB",
+    "Autre entité / Non listée",
+]
+
+EMPLOYMENT_TYPES = [
+    "Administrative - Cadre jours",
+    "Administrative - Cadre heures",
+    "Administrative - Technicien",
+    "Administrative - Employé",
+    "Apprentie",
+    "Stagiaire",
+    "Enseignant",
+    "Model vivant",
+    "Surveillant",
+]
+
+CONTRACT_TYPES = ["CDI", "CDD"]
+WORK_TIMES = ["Temps plein", "Temps partiel"]
+USER_ROLES = ["Salarié", "Manager"]
+
+THEMES = {
+    "Ma paie": [
+        "Je ne comprends pas une ligne de mon bulletin",
+        "Je constate une différence sur mon salaire",
+        "Mon variable / mes heures n'apparaissent pas",
+        "Mon salaire semble incomplet",
+        "Je pense qu'une prime manque",
+        "Je veux comprendre un net / brut / imposable",
+        "Je veux savoir à qui m'adresser",
+        "Autre besoin",
+    ],
+    "Mon Portail Paie": [
+        "Je n'arrive pas à me connecter",
+        "J'ai oublié mon mot de passe",
+        "Je ne trouve pas un document",
+        "Mon accès semble bloqué",
+        "Je ne vois pas mes bulletins",
+        "Je ne comprends pas où faire ma demande",
+        "Autre besoin",
+    ],
+    "Absence": [
+        "Je veux déclarer une absence",
+        "Je veux signaler un arrêt de travail",
+        "Je veux comprendre l'impact de mon absence en paie",
+        "Je veux régulariser une absence passée",
+        "Je ne sais pas quel motif choisir",
+        "Autre besoin",
+    ],
+    "Congés": [
+        "Je veux poser des congés",
+        "Je veux connaître mon solde",
+        "Je veux comprendre pourquoi ma demande est bloquée",
+        "Je veux modifier / annuler une demande",
+        "Je veux comprendre mes droits",
+        "Autre besoin",
+    ],
+    "Mutuelle": [
+        "Je veux comprendre ma cotisation",
+        "Je veux demander une dispense",
+        "Je veux signaler un problème d'affiliation",
+        "Je veux ajouter / retirer des ayants droit",
+        "Je veux savoir qui contacter",
+        "Autre besoin",
+    ],
+    "Transport": [
+        "Je veux demander un remboursement transport",
+        "Je veux savoir si je suis éligible",
+        "Je veux transmettre un justificatif",
+        "Je veux comprendre un refus ou un retard",
+        "Autre besoin",
+    ],
+    "Ticket restaurant": [
+        "Je n'ai pas reçu ma carte / mes titres",
+        "Ma carte ne fonctionne pas",
+        "Je veux comprendre mon solde / mes droits",
+        "Je veux signaler une perte ou un vol",
+        "Je veux savoir si j'y ai droit",
+        "Autre besoin",
+    ],
+    "Télétravail": [
+        "Je veux connaître les règles applicables",
+        "Je veux faire une demande",
+        "Je veux comprendre un refus",
+        "Je veux savoir comment déclarer mes jours",
+        "Autre besoin",
+    ],
+    "Acompte": [
+        "Je veux demander un acompte",
+        "Je veux savoir si j'y ai droit",
+        "Je veux connaître la procédure",
+        "Je veux savoir où en est ma demande",
+        "Autre besoin",
+    ],
+    "Bulletins": [
+        "Je veux récupérer un bulletin",
+        "Je ne vois pas mon bulletin",
+        "Je veux un bulletin ancien",
+        "Je veux comprendre une date de mise à disposition",
+        "Autre besoin",
+    ],
+    "Documents de sortie": [
+        "Je veux savoir quand je recevrai mes documents",
+        "Il manque un document de sortie",
+        "Je veux comprendre le solde de tout compte",
+        "Je veux une attestation spécifique",
+        "Autre besoin",
+    ],
+    "JPO ou SPO": [
+        "Je veux déclarer une JPO / SPO",
+        "Je veux comprendre pourquoi la récupération est bloquée",
+        "Je veux savoir où saisir ma journée",
+        "Je veux régulariser une saisie",
+        "Autre besoin",
+    ],
+    "Heures supplémentaires": [
+        "Je veux déclarer des heures supplémentaires",
+        "Je veux comprendre leur paiement",
+        "Je veux comprendre pourquoi elles n'apparaissent pas",
+        "Je veux régulariser une période passée",
+        "Autre besoin",
+    ],
+    "Demande de documents": [
+        "Je veux une attestation employeur",
+        "Je veux une attestation de salaire",
+        "Je veux une attestation de présence",
+        "Je veux un certificat de travail",
+        "Je veux un document pour une administration",
+        "Autre besoin",
+    ],
+}
+
+RESPONSES = {
+    ("Ma paie", "Je ne comprends pas une ligne de mon bulletin"): {
+        "title": "Comprendre une ligne du bulletin",
+        "summary": "Pour analyser correctement une ligne de paie, il faut d'abord identifier la rubrique concernée et vérifier la période, le type de contrat et les éventuels éléments variables du mois.",
+        "checks": [
+            "Identifier le libellé exact de la ligne concernée sur le bulletin.",
+            "Vérifier le mois du bulletin analysé.",
+            "Comparer avec le bulletin du mois précédent si nécessaire.",
+            "Regarder s'il y a eu une absence, un variable, une prime ou une régularisation.",
+        ],
+        "action": "Si besoin, transmettez une capture de la ligne concernée ou le libellé exact au support RH / paie pour explication.",
+        "contact": "Support RH / Paie",
+    },
+    ("Ma paie", "Je constate une différence sur mon salaire"): {
+        "title": "Écart constaté sur le salaire",
+        "summary": "Un écart de salaire peut venir d'une absence, d'un retard de saisie, d'un variable validé trop tard, d'une régularisation ou d'une évolution contractuelle.",
+        "checks": [
+            "Comparer le net à payer avec le mois précédent.",
+            "Vérifier les absences, congés, acomptes ou retenues éventuelles.",
+            "Vérifier la présence d'une prime ou d'un variable habituel manquant.",
+            "Contrôler si le mois comporte une régularisation.",
+        ],
+        "action": "Si l'écart persiste après vérification, préparez un message détaillé avec le mois concerné et l'élément qui vous semble incorrect.",
+        "contact": "Support RH / Paie",
+    },
+    ("Mon Portail Paie", "Je n'arrive pas à me connecter"): {
+        "title": "Problème de connexion au portail paie",
+        "summary": "Avant escalade, il convient de vérifier que le bon lien est utilisé, que les identifiants sont corrects et qu'il ne s'agit pas d'un blocage temporaire.",
+        "checks": [
+            "Vérifier que vous utilisez le bon portail.",
+            "Tester une navigation privée ou un autre navigateur.",
+            "Vérifier l'orthographe de votre identifiant.",
+            "Tester la fonction mot de passe oublié si disponible.",
+        ],
+        "action": "Si l'accès reste bloqué, signalez le problème en précisant le message d'erreur affiché.",
+        "contact": "Support RH / Paie ou support SIRH",
+    },
+    ("Absence", "Je veux déclarer une absence"): {
+        "title": "Déclarer une absence",
+        "summary": "La déclaration dépend du motif d'absence et du circuit interne de validation. Le bon motif doit être sélectionné pour éviter un impact erroné en paie.",
+        "checks": [
+            "Identifier la nature exacte de l'absence.",
+            "Vérifier la période concernée.",
+            "Déposer le justificatif si requis.",
+            "S'assurer que la demande suit bien le circuit de validation.",
+        ],
+        "action": "Si vous ne savez pas quel motif choisir, contactez le support avant validation.",
+        "contact": "Manager / RH / Paie selon procédure interne",
+    },
+    ("Congés", "Je veux poser des congés"): {
+        "title": "Poser des congés",
+        "summary": "Avant dépôt, il faut vérifier le solde disponible, la période demandée et les règles de validation internes.",
+        "checks": [
+            "Vérifier votre solde de congés.",
+            "Contrôler les dates demandées.",
+            "S'assurer que la demande est faite dans le bon module.",
+            "Informer votre manager si nécessaire.",
+        ],
+        "action": "En cas de blocage, notez le message affiché et la période concernée.",
+        "contact": "Manager / RH / Paie",
+    },
+    ("Mutuelle", "Je veux demander une dispense"): {
+        "title": "Demande de dispense mutuelle",
+        "summary": "Une dispense de mutuelle n'est possible que dans certains cas prévus. Un justificatif est généralement nécessaire et doit être transmis selon la procédure prévue.",
+        "checks": [
+            "Vérifier si votre situation entre dans un cas de dispense.",
+            "Préparer le justificatif demandé.",
+            "Vérifier si un formulaire spécifique existe.",
+            "Respecter le délai de transmission.",
+        ],
+        "action": "Si vous ne savez pas si vous êtes éligible, demandez une confirmation avant envoi du dossier.",
+        "contact": "RH / organisme de gestion mutuelle selon procédure",
+    },
+    ("Transport", "Je veux demander un remboursement transport"): {
+        "title": "Remboursement transport",
+        "summary": "La demande nécessite généralement un justificatif valide et dépend de la situation du salarié ainsi que des règles internes applicables.",
+        "checks": [
+            "Vérifier que votre abonnement / justificatif est valide.",
+            "Contrôler la période couverte.",
+            "Vérifier le canal de dépôt prévu.",
+            "S'assurer que le document est lisible.",
+        ],
+        "action": "En cas de rejet ou retard, demandez la raison précise et la période traitée.",
+        "contact": "RH / Paie",
+    },
+    ("Ticket restaurant", "Je n'ai pas reçu ma carte / mes titres"): {
+        "title": "Carte ou titres non reçus",
+        "summary": "Un retard peut venir d'une commande en cours, d'une adresse incorrecte ou d'un problème d'activation / livraison.",
+        "checks": [
+            "Vérifier l'adresse enregistrée.",
+            "Vérifier votre éligibilité et votre date d'entrée.",
+            "Contrôler si une commande a bien été lancée.",
+            "Préciser s'il s'agit d'une première demande ou d'un renouvellement.",
+        ],
+        "action": "Si la situation dure, demander une vérification de l'état de commande ou une réédition si nécessaire.",
+        "contact": "RH / Paie / gestionnaire titres restaurant",
+    },
+    ("Télétravail", "Je veux faire une demande"): {
+        "title": "Demande de télétravail",
+        "summary": "La demande dépend de votre éligibilité, de l'organisation de votre poste et des règles internes de l'entité.",
+        "checks": [
+            "Vérifier si votre poste est éligible.",
+            "Vérifier le nombre de jours autorisés.",
+            "Suivre le circuit de validation prévu.",
+            "Contrôler si un avenant ou une formalisation est requis.",
+        ],
+        "action": "Si besoin, rapprochez-vous de votre manager avant dépôt officiel.",
+        "contact": "Manager / RH",
+    },
+    ("Acompte", "Je veux demander un acompte"): {
+        "title": "Demander un acompte",
+        "summary": "L'acompte suit généralement une procédure précise et peut dépendre de la date de demande et de votre situation contractuelle.",
+        "checks": [
+            "Vérifier si vous êtes éligible.",
+            "Vérifier la date limite de demande.",
+            "Préparer le canal de demande prévu.",
+            "Préciser le mois concerné.",
+        ],
+        "action": "Si la procédure n'est pas claire, préparez une demande simple avec votre identité, l'entité et le mois concerné.",
+        "contact": "Paie / RH",
+    },
+    ("Bulletins", "Je veux récupérer un bulletin"): {
+        "title": "Récupération d'un bulletin",
+        "summary": "Le bulletin est généralement disponible sur le portail dédié. En cas d'absence du document, il faut vérifier la période, l'accès et la mise à disposition.",
+        "checks": [
+            "Vérifier le bon mois.",
+            "Tester un autre navigateur si besoin.",
+            "Vérifier si le bulletin a déjà été publié.",
+            "Confirmer que vous êtes sur le bon espace documentaire.",
+        ],
+        "action": "Si le bulletin est introuvable, signalez le mois exact concerné.",
+        "contact": "Paie / support portail",
+    },
+    ("Documents de sortie", "Je veux savoir quand je recevrai mes documents"): {
+        "title": "Réception des documents de sortie",
+        "summary": "Les documents de sortie sont transmis selon le calendrier de traitement interne après la fin du contrat et la finalisation des éléments nécessaires.",
+        "checks": [
+            "Vérifier votre date de fin de contrat.",
+            "Vérifier si tous les éléments ont bien été remontés.",
+            "Identifier les documents attendus.",
+            "Vérifier l'adresse ou le canal de transmission prévu.",
+        ],
+        "action": "Si un document manque, précisez lequel pour accélérer le traitement.",
+        "contact": "RH / Paie",
+    },
+    ("JPO ou SPO", "Je veux comprendre pourquoi la récupération est bloquée"): {
+        "title": "Récupération JPO / SPO bloquée",
+        "summary": "La récupération peut être bloquée si la journée n'a pas encore été validée complètement, si elle n'est pas sur un mois révolu ou si le mauvais motif a été utilisé.",
+        "checks": [
+            "Vérifier que la JPO / SPO a bien été saisie.",
+            "Vérifier que le processus de validation est terminé.",
+            "Vérifier que la journée est sur un mois révolu.",
+            "Contrôler le motif d'activité utilisé.",
+        ],
+        "action": "En cas de doute, transmettre la date exacte et une capture de la saisie effectuée.",
+        "contact": "RH / Paie / manager selon circuit",
+    },
+    ("Heures supplémentaires", "Je veux comprendre leur paiement"): {
+        "title": "Comprendre le paiement des heures supplémentaires",
+        "summary": "Le paiement dépend de la validation, de la période de paie, du statut du salarié et des règles applicables à l'entité et au contrat.",
+        "checks": [
+            "Vérifier que les heures ont bien été validées.",
+            "Contrôler le mois de réalisation.",
+            "Vérifier si une régularisation est en cours.",
+            "Préciser la période exacte concernée.",
+        ],
+        "action": "Si elles n'apparaissent pas, demandez un contrôle en indiquant les dates et le volume concerné.",
+        "contact": "Manager / Paie",
+    },
+    ("Demande de documents", "Je veux une attestation employeur"): {
+        "title": "Demande d'attestation employeur",
+        "summary": "Pour traiter rapidement la demande, il faut préciser le type exact d'attestation attendu, l'usage prévu et le délai souhaité.",
+        "checks": [
+            "Préciser le type d'attestation.",
+            "Préciser l'organisme destinataire si besoin.",
+            "Indiquer l'urgence éventuelle.",
+            "Vérifier le format attendu si connu.",
+        ],
+        "action": "Préparez une demande claire indiquant l'usage du document.",
+        "contact": "RH / Administration du personnel",
+    },
+}
+
+DEFAULT_RESPONSE = {
+    "title": "Analyse de la demande",
+    "summary": "Votre besoin a bien été identifié. Une vérification ciblée est nécessaire pour confirmer la bonne procédure et éviter une réponse inexacte.",
+    "checks": [
+        "Vérifier la période concernée.",
+        "Vérifier le canal utilisé pour la demande.",
+        "Préciser le contexte exact et, si besoin, joindre un justificatif ou une capture.",
+    ],
+    "action": "Si vous ne trouvez pas la réponse immédiatement, utilisez le message prêt à envoyer ci-dessous.",
+    "contact": "Support RH / Paie",
+}
+
+# =========================================================
+# FONCTIONS
+# =========================================================
+def safe_display_image(path, width=None):
+    if isinstance(path, str) and path.startswith("http"):
+        st.image(path, width=width)
+    elif os.path.exists(path):
+        st.image(path, width=width)
+
+
+def get_complexity_score(theme, need, free_text):
+    score = 1
+    if "Autre besoin" in need:
+        score += 2
+    if theme in ["Ma paie", "Documents de sortie", "Heures supplémentaires", "JPO ou SPO"]:
+        score += 2
+    if len(free_text.strip()) > 80:
+        score += 1
+    return min(score, 5)
+
+
+def get_complexity_label(score):
+    if score <= 2:
+        return "Simple"
+    if score == 3:
+        return "Intermédiaire"
+    return "Sensibile / à vérifier"
+
+
+def get_rule_based_alerts(role, job_type, contract_type, work_time, theme):
+    alerts = []
+    if job_type == "Enseignant" and theme in ["Heures supplémentaires", "JPO ou SPO", "Ma paie"]:
+        alerts.append("Pour les enseignants, la vérification des heures, variables et remontées pédagogiques est prioritaire.")
+    if job_type == "Stagiaire":
+        alerts.append("Pour un stagiaire, certaines rubriques paie ou avantages peuvent suivre des règles spécifiques.")
+    if job_type == "Apprentie":
+        alerts.append("Pour une apprentie, le contrat, l'âge et le mois d'exécution peuvent influer sur le traitement paie.")
+    if work_time == "Temps partiel":
+        alerts.append("Le temps partiel peut modifier les droits, soldes, montants et contrôles attendus.")
+    if contract_type == "CDD" and theme == "Documents de sortie":
+        alerts.append("En CDD, la vérification de la date de fin de contrat et des documents de sortie est essentielle.")
+    if role == "Manager":
+        alerts.append("En tant que manager, vous pouvez être sollicité sur la validation ou le suivi d'une demande salariée.")
+    return alerts
+
+
+def build_response(theme, need, role, entity, job_type, contract_type, work_time, free_text):
+    data = RESPONSES.get((theme, need), DEFAULT_RESPONSE)
+    complexity_score = get_complexity_score(theme, need, free_text)
+    alerts = get_rule_based_alerts(role, job_type, contract_type, work_time, theme)
+
+    context_lines = [
+        f"Profil déclaré : {role}",
+        f"Entité : {entity}",
+        f"Type d'emploi : {job_type}",
+        f"Contrat : {contract_type}",
+        f"Temps de travail : {work_time}",
+    ]
+
+    return {
+        "title": data["title"],
+        "summary": data["summary"],
+        "checks": data["checks"],
+        "action": data["action"],
+        "contact": data["contact"],
+        "context": context_lines,
+        "complexity_score": complexity_score,
+        "complexity_label": get_complexity_label(complexity_score),
+        "alerts": alerts,
+    }
+
+
+def build_support_message(role, entity, job_type, contract_type, work_time, theme, need, free_text=""):
+    date_str = datetime.now().strftime("%d/%m/%Y")
+    body = f"""Bonjour,
+
+Je vous contacte concernant une demande RH / Paie.
+
+Voici les éléments de contexte :
+- Profil : {role}
+- Entité : {entity}
+- Type d'emploi : {job_type}
+- Type de contrat : {contract_type}
+- Temps de travail : {work_time}
+- Thème : {theme}
+- Besoin précis : {need}
+
+Description complémentaire :
+{free_text if free_text else 'Merci de trouver ci-dessus les éléments nécessaires à l’analyse de ma demande.'}
+
+Pouvez-vous m’indiquer la marche à suivre ou procéder à la vérification nécessaire ?
+
+Merci par avance.
+
+Cordialement,
+"""
+    subject = f"[{entity}] Demande RH / Paie - {theme} - {date_str}"
+    return subject, body
+
 
 # =========================================================
 # STYLE
 # =========================================================
-st.markdown("""
-<style>
-.block-container {
-    max-width: 980px;
-    padding-top: 1.2rem;
-    padding-bottom: 2rem;
-}
-.hero {
-    background: linear-gradient(135deg, #0f62fe 0%, #6ea8fe 100%);
-    color: white;
-    padding: 22px 24px;
-    border-radius: 18px;
-    margin-bottom: 18px;
-}
-.hero h1 {
-    margin: 0;
-    font-size: 2rem;
-    line-height: 1.1;
-}
-.hero p {
-    margin: 8px 0 0 0;
-    opacity: 0.95;
-}
-.card {
-    background: white;
-    border: 1px solid #e9ecef;
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 14px;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.04);
-}
-.answer-card {
-    background: #ffffff;
-    border: 1px solid #dbeafe;
-    border-left: 5px solid #0f62fe;
-    border-radius: 16px;
-    padding: 18px;
-    margin-top: 10px;
-    margin-bottom: 14px;
-}
-.topic-tag {
-    display: inline-block;
-    background: #eef4ff;
-    color: #0f62fe;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-.muted {
-    color: #6c757d;
-    font-size: 0.92rem;
-}
-.kpi {
-    background: #f8f9fa;
-    border-radius: 14px;
-    padding: 10px 12px;
-    border: 1px dashed #d0d7de;
-    font-size: 0.92rem;
-    height: 100%;
-}
-.footer-note {
-    color: #6c757d;
-    font-size: 0.88rem;
-    margin-top: 12px;
-}
-.context-box {
-    background: #f8fbff;
-    border: 1px solid #dbeafe;
-    border-radius: 14px;
-    padding: 12px;
-    margin-bottom: 14px;
-}
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div class="hero">
-  <h1>🤖 Agent Employé IA</h1>
-  <p>Assistant RH / Paie guidé par parcours métier</p>
-</div>
-""", unsafe_allow_html=True)
-
-# =========================================================
-# DONNÉES DU PARCOURS
-# =========================================================
-ROLES = [
-    "Salarié",
-    "Manager",
-]
-
-ENTITIES = [
-    "Atelier de Sèvres",
-    "CIFACOM, École de graphisme et d’audiovisuel",
-    "ESARC Aix-en-Provence",
-    "ESARC Bordeaux",
-    "ESARC Dijon",
-    "ESARC Lyon",
-    "ESARC Montpellier",
-    "ESARC Nantes",
-    "ESARC Rouen",
-    "ESARC Strasbourg",
-    "ESARC Toulouse",
-    "ESARC Tours",
-    "ESG Immobilier – Campus de Lyon",
-    "HETIC",
-    "IESA arts et culture",
-    "LISAA Architecture d’intérieur et design Paris",
-    "LISAA Bordeaux",
-    "LISAA Design graphique et communication Paris",
-    "LISAA Nantes",
-    "LISAA Paris animation et jeu vidéo",
-    "LISAA Rennes",
-    "LISAA Strasbourg",
-    "LISAA Toulouse",
-    "LISAA mode Paris",
-    "Narratiiv",
-    "Paris School of Business",
-    "Strate, école de design",
-    "Atelier Chardon-Savard",
-    "Atelier Chardon-Savard Nantes",
-    "Cours Florent Paris",
-    "Digital Campus Aix-en-Provence",
-    "Digital Campus Bordeaux",
-    "Digital Campus Lyon",
-    "Digital Campus Montpellier",
-    "Digital Campus Nantes",
-    "Digital Campus Paris",
-    "Digital Campus Rennes",
-    "Digital Campus Strasbourg",
-    "Digital Campus Toulouse",
-    "e-artsup Aix-en-Provence",
-    "e-artsup Lyon",
-    "e-artsup Montpellier",
-    "Institut Marangoni",
-    "Penninghen - école de direction artistique, communication et architecture intérieure",
-    "Web School Factory",
-]
-
-THEMES = [
-    "Ma paie",
-    "Mon Portail Paie",
-    "Absence",
-    "Congés",
-    "Mutuelle",
-    "Transport",
-    "Ticket restaurant",
-    "Télétravail",
-    "Acompte",
-    "Bulletins",
-    "Documents de sortie",
-    "JPO ou SPO",
-    "Heures supplémentaires",
-    "Demande de documents",
-]
-
-SUBTHEMES = {
-    "Ma paie": [
-        "Mon salaire a baissé",
-        "Je ne comprends pas une ligne de mon bulletin",
-        "Il manque une prime",
-        "Je pense qu’il y a une erreur sur mon bulletin",
-        "Je ne comprends pas mon net à payer",
-        "Je ne comprends pas une retenue",
-        "Je veux comprendre une régularisation",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "Mon Portail Paie": [
-        "Je ne vois pas la tuile / je n’ai pas accès",
-        "Ma demande ne remonte pas",
-        "Je ne comprends pas la période de gel",
-        "Je ne sais pas où faire ma demande",
-        "Je ne comprends pas le circuit de validation",
-        "Je souhaite être accompagné sur le portail",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "Absence": [
-        "Arrêt maladie",
-        "Enfant malade",
-        "Absence injustifiée / justifiée",
-        "Je veux comprendre l’impact paie de mon absence",
-        "Je veux comprendre la subrogation",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "Congés": [
-        "Congés payés",
-        "RTT / récupération",
-        "Mariage / PACS",
-        "Décès",
-        "Jours de révision",
-        "Je ne comprends pas mon compteur",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "Mutuelle": [
-        "La mutuelle est-elle obligatoire ?",
-        "Je veux une dispense",
-        "Je n’ai pas répondu au mail d’affiliation",
-        "Je vois une cotisation mutuelle",
-        "Je veux comprendre ma situation mutuelle",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "Transport": [
-        "Remboursement Navigo",
-        "Quels justificatifs fournir ?",
-        "Ce qui n’est pas remboursé",
-        "Ma demande transport ne remonte pas",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "Ticket restaurant": [
-        "Combien ai-je de tickets restaurant ?",
-        "Comment déclarer mes tickets restaurant ?",
-        "Je n’ai pas reçu ma carte",
-        "Je ne comprends pas mon nombre de tickets",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "Télétravail": [
-        "Pourquoi je n’ai pas la ligne télétravail ?",
-        "Quels documents faut-il ?",
-        "Mon avenant / assurance a été transmis",
-        "Je veux comprendre l’allocation télétravail",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "Acompte": [
-        "Puis-je demander un acompte ?",
-        "Je veux comprendre la différence entre acompte et avance",
-        "Je ne vois pas ma demande sur le portail",
-        "Je veux connaître la fenêtre de demande",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "Bulletins": [
-        "Je veux accéder à mon bulletin",
-        "Je ne retrouve pas mon bulletin",
-        "Je veux comprendre comment fonctionne Arkevia",
-        "Je veux réinitialiser mon accès",
-        "Importer mes anciens bulletins",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "Documents de sortie": [
-        "Solde de tout compte",
-        "Certificat de travail",
-        "Attestation France Travail",
-        "Je n’ai pas reçu mes documents de sortie",
-        "Je veux comprendre mes documents de fin de contrat",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "JPO ou SPO": [
-        "Je veux comprendre les JPO / SPO",
-        "Je veux comprendre la récupération",
-        "Je veux comprendre le paiement",
-        "Je ne vois pas ma JPO / SPO",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "Heures supplémentaires": [
-        "Il manque des heures",
-        "Mes heures ont été faites avant le 15",
-        "Mes heures ont été faites après le 15",
-        "Le manager n’a pas validé",
-        "Je veux comprendre le décalage de paiement",
-        "Mon sujet n’est pas dans la liste",
-    ],
-    "Demande de documents": [
-        "Attestation employeur",
-        "Attestation de salaire",
-        "Duplicata de bulletin",
-        "Guide d’accès Arkevia",
-        "Autre document",
-        "Mon sujet n’est pas dans la liste",
-    ],
-}
+st.markdown(
+    f"""
+    <style>
+        .stApp {{
+            background: linear-gradient(180deg, {PRIMARY_BLUE} 0%, #172554 45%, #0f172a 100%);
+            color: {TEXT_MAIN};
+        }}
+        section[data-testid="stSidebar"] {{
+            background: linear-gradient(180deg, #111827 0%, #0b1120 100%);
+            border-right: 1px solid rgba(255,255,255,0.06);
+        }}
+        .karen-card {{
+            background: rgba(17,24,39,0.92);
+            border-radius: 22px;
+            padding: 1.2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 1rem;
+            backdrop-filter: blur(4px);
+        }}
+        .hero-card {{
+            background: linear-gradient(135deg, {SECONDARY_BLUE} 0%, {ACCENT_RED} 100%);
+            border-radius: 24px;
+            padding: 1.4rem;
+            color: white;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+            margin-bottom: 1rem;
+        }}
+        .karen-title {{
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            color: white;
+            margin-bottom: 0.15rem;
+        }}
+        .karen-subtitle {{
+            font-size: 1rem;
+            color: #fee2e2;
+            margin-bottom: 0.75rem;
+        }}
+        .section-title {{
+            font-size: 1.08rem;
+            font-weight: 800;
+            color: #93c5fd;
+            margin-bottom: 0.45rem;
+        }}
+        .small-note {{
+            font-size: 0.94rem;
+            color: #e5e7eb;
+        }}
+        .metric-pill {{
+            display:inline-block;
+            padding: 0.42rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.12);
+            color: white;
+            font-size: 0.9rem;
+            margin-right: 0.45rem;
+            margin-bottom: 0.35rem;
+        }}
+        .success-box {{
+            background: #052e16;
+            border-left: 5px solid #22c55e;
+            padding: 0.9rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            color: white;
+        }}
+        .warning-box {{
+            background: #450a0a;
+            border-left: 5px solid {BRIGHT_RED};
+            padding: 0.9rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            color: white;
+        }}
+        .info-box {{
+            background: #082f49;
+            border-left: 5px solid #38bdf8;
+            padding: 0.9rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            color: white;
+        }}
+        .avatar-box {{
+            position: fixed;
+            right: 22px;
+            bottom: 18px;
+            width: 110px;
+            z-index: 999;
+            background: rgba(17,24,39,0.88);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            padding: 0.55rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            text-align: center;
+        }}
+        .avatar-label {{
+            color: #cbd5e1;
+            font-size: 0.75rem;
+            margin-top: 0.35rem;
+        }}
+        .stButton>button {{
+            width: 100%;
+            background: linear-gradient(90deg, {ACCENT_RED} 0%, {BRIGHT_RED} 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            padding: 0.7rem 1rem;
+        }}
+        .stButton>button:hover {{
+            filter: brightness(1.05);
+        }}
+        div[data-baseweb="select"] > div,
+        .stTextInput input,
+        .stTextArea textarea {{
+            background-color: #0b1220 !important;
+            color: white !important;
+            border-radius: 12px !important;
+        }}
+        .stRadio label, .stMarkdown, .stCaption, .stSelectbox label, .stTextArea label, .stTextInput label {{
+            color: {TEXT_MAIN} !important;
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # =========================================================
-# SESSION STATE
+# SIDEBAR
 # =========================================================
-DEFAULTS = {
-    "step": 1,
-    "role": None,
-    "entity": None,
-    "theme": None,
-    "subtheme": None,
-    "q1": None,
-    "q2": None,
-    "q3": None,
-    "result": None,
-    "free_message": "",
-}
-
-for k, v in DEFAULTS.items():
-    if k not in st.session_state:
-        st.session_state[k] = v
-
-
-def reset_flow() -> None:
-    for k, v in DEFAULTS.items():
-        st.session_state[k] = v
-
-
-def set_step(step: int) -> None:
-    st.session_state["step"] = step
-    st.rerun()
-
+with st.sidebar:
+    safe_display_image(LOGO_PATH, width=110)
+    st.markdown("## KAREN")
+    st.caption("Agent RH / Paie guidé")
+    st.markdown("---")
+    st.markdown("### Navigation")
+    st.markdown("- Qualification")
+    st.markdown("- Analyse")
+    st.markdown("- Message prêt à transmettre")
+    st.markdown("- FAQ métier")
+    st.markdown("---")
+    st.markdown("### Atouts démo")
+    st.markdown("- Sans OpenAI")
+    st.markdown("- Parcours guidé")
+    st.markdown("- Règles métier")
+    st.markdown("- Escalade propre")
+    st.markdown("- Compatible Streamlit Cloud")
 
 # =========================================================
-# MOTEUR DE RÉPONSE
+# HEADER
 # =========================================================
-def _base_result(role: str, entity: str, theme: str, subtheme: str) -> Dict[str, str]:
-    topic = f"{role} • {entity} • {theme} • {subtheme}"
-    return {
-        "topic": topic,
-        "what_it_means": "",
-        "why_it_happens": "",
-        "what_to_do": "",
-        "who_to_contact": "",
-        "ready_text": "",
-    }
-
-
-def _finalize_result(result: Dict[str, str]) -> Dict[str, str]:
-    result["ready_text"] = (
-        f"Sujet : {result['topic']}\n\n"
-        f"Ce que cela signifie :\n{result['what_it_means']}\n\n"
-        f"Pourquoi cela arrive :\n{result['why_it_happens']}\n\n"
-        f"Ce que vous devez faire :\n{result['what_to_do']}\n\n"
-        f"Qui contacter si besoin :\n{result['who_to_contact']}"
-    )
-    return result
-
-
-def build_structured_answer(
-    role: str,
-    entity: str,
-    theme: str,
-    subtheme: str,
-    q1: Optional[str] = None,
-    q2: Optional[str] = None,
-    q3: Optional[str] = None,
-) -> Dict[str, str]:
-    result = _base_result(role, entity, theme, subtheme)
-
-    # -----------------------------------------------------
-    # MA PAIE
-    # -----------------------------------------------------
-    if theme == "Ma paie":
-        if subtheme == "Mon salaire a baissé":
-            result["what_it_means"] = "Une baisse de salaire n’est pas forcément une anomalie."
-            result["why_it_happens"] = (
-                "Elle peut venir d’une absence, d’une maladie, d’un acompte, "
-                "d’une prime absente, d’une régularisation ou d’un élément variable non encore traité."
-            )
-            result["what_to_do"] = (
-                "Comparez le bulletin du mois concerné avec le mois précédent et vérifiez : "
-                "les absences, les primes, les acomptes, les retenues et les régularisations."
-            )
-            result["who_to_contact"] = "Service paie"
-
-            if q1 == "Oui, après une absence maladie":
-                result["why_it_happens"] = (
-                    "En arrêt maladie, l’absence est déduite de la paie. "
-                    "La Sécurité sociale peut verser des indemnités journalières, "
-                    "avec parfois 3 jours de carence. "
-                    "Selon l’ancienneté, un maintien de salaire ou un complément de prévoyance peut aussi exister."
-                )
-                result["what_to_do"] = (
-                    "Vérifiez le mois concerné, la présence de l’absence maladie sur le bulletin "
-                    "et si des IJSS ont été versées."
-                )
-            elif q1 == "Oui, après une autre absence":
-                result["why_it_happens"] = (
-                    "Certaines absences ont un impact direct sur la paie. "
-                    "Le montant final dépend du type d’absence et de sa prise en charge éventuelle."
-                )
-                result["what_to_do"] = "Vérifiez le type d’absence posé et la période concernée."
-            elif q1 == "Non, sans absence":
-                result["why_it_happens"] = (
-                    "Dans ce cas, les causes les plus fréquentes sont : prime absente ou différente, "
-                    "acompte, régularisation, retenue ou variation d’éléments variables."
-                )
-                result["what_to_do"] = "Vérifiez en priorité les primes, acomptes et régularisations."
-
-        elif subtheme == "Je ne comprends pas une ligne de mon bulletin":
-            result["what_it_means"] = "Une ligne de bulletin doit être lue selon sa nature."
-            result["why_it_happens"] = (
-                "Une ligne peut correspondre à une absence, une prime, une cotisation, "
-                "un acompte, une régularisation ou une allocation."
-            )
-            result["what_to_do"] = "Relevez le libellé exact de la ligne et le mois concerné."
-            result["who_to_contact"] = "Service paie"
-
-        elif subtheme == "Il manque une prime":
-            result["what_it_means"] = "L’absence d’une prime n’est pas toujours une erreur paie."
-            result["why_it_happens"] = (
-                "Le montant et la validation des primes sont souvent transmis à la paie "
-                "par le manager ou le RH."
-            )
-            result["what_to_do"] = "Vérifiez d’abord si la prime a bien été validée et transmise."
-            result["who_to_contact"] = "Manager / RH"
-
-        elif subtheme == "Je pense qu’il y a une erreur sur mon bulletin":
-            result["what_it_means"] = "Il faut qualifier précisément l’écart."
-            result["why_it_happens"] = (
-                "Un montant différent peut provenir d’un décalage de traitement, "
-                "d’une régularisation ou d’une anomalie réelle."
-            )
-            result["what_to_do"] = (
-                "Préparez le mois concerné, la ligne concernée et la différence constatée."
-            )
-            result["who_to_contact"] = "Service paie"
-
-        elif subtheme == "Je ne comprends pas mon net à payer":
-            result["what_it_means"] = "Le net à payer varie en fonction de plusieurs éléments."
-            result["why_it_happens"] = (
-                "Le net dépend du brut, des cotisations, des absences, des acomptes, "
-                "des primes et des éventuelles régularisations."
-            )
-            result["what_to_do"] = (
-                "Comparez brut, cotisations, retenues et régularisations avec le mois précédent."
-            )
-            result["who_to_contact"] = "Service paie"
-
-        elif subtheme == "Je ne comprends pas une retenue":
-            result["what_it_means"] = "Une retenue correspond souvent à une absence, un acompte ou une régularisation."
-            result["why_it_happens"] = (
-                "La retenue peut être normale si une absence, un acompte ou une correction a été enregistré."
-            )
-            result["what_to_do"] = "Vérifiez la ligne exacte et la période concernée."
-            result["who_to_contact"] = "Service paie"
-
-        elif subtheme == "Je veux comprendre une régularisation":
-            result["what_it_means"] = "Une régularisation corrige un écart passé."
-            result["why_it_happens"] = (
-                "Elle peut concerner une prime, une absence, une cotisation, un avantage ou un élément variable."
-            )
-            result["what_to_do"] = "Comparez avec les bulletins précédents pour repérer l’élément corrigé."
-            result["who_to_contact"] = "Service paie"
-
-    # -----------------------------------------------------
-    # MON PORTAIL PAIE
-    # -----------------------------------------------------
-    elif theme == "Mon Portail Paie":
-        if subtheme == "Je ne vois pas la tuile / je n’ai pas accès":
-            result["what_it_means"] = "Le problème est probablement un sujet d’accès."
-            result["why_it_happens"] = "L’accès dépend des habilitations et de l’environnement One Login."
-            result["what_to_do"] = "Signalez l’absence de la tuile et vérifiez vos accès."
-            result["who_to_contact"] = "Manager et support informatique"
-
-        elif subtheme == "Ma demande ne remonte pas":
-            result["what_it_means"] = "Une demande peut être saisie mais non visible immédiatement en paie."
-            result["why_it_happens"] = (
-                "Cela peut venir d’une validation incomplète, de la période de gel, "
-                "ou d’un délai normal de remontée."
-            )
-            result["what_to_do"] = "Vérifiez le statut de validation et la date de saisie."
-            result["who_to_contact"] = "Manager / RH / paie"
-
-        elif subtheme == "Je ne comprends pas la période de gel":
-            result["what_it_means"] = "La période de gel suspend temporairement les remontées en paie."
-            result["why_it_happens"] = (
-                "Entre le 20 et le 7 du mois suivant, les demandes peuvent continuer à être saisies "
-                "mais elles ne remontent pas immédiatement dans la paie."
-            )
-            result["what_to_do"] = "Attendez la prochaine fenêtre de remontée après la période de gel."
-            result["who_to_contact"] = "Service paie"
-
-        elif subtheme == "Je ne sais pas où faire ma demande":
-            result["what_it_means"] = "Chaque demande suit un chemin spécifique dans le portail."
-            result["why_it_happens"] = (
-                "Selon le sujet, la demande peut se faire via Mes demandes, Mes validations "
-                "ou Mes éléments variables."
-            )
-            result["what_to_do"] = "Précisez le type de demande pour être orienté vers le bon menu."
-            result["who_to_contact"] = "Contact paie / RH"
-
-        elif subtheme == "Je ne comprends pas le circuit de validation":
-            result["what_it_means"] = "Certaines demandes nécessitent plusieurs étapes de validation."
-            result["why_it_happens"] = (
-                "Selon le sujet, la validation peut relever du manager, du contact paie ou des RH."
-            )
-            result["what_to_do"] = "Vérifiez l’étape actuelle de la demande et le validant attendu."
-            result["who_to_contact"] = "Manager / contact paie"
-
-        elif subtheme == "Je souhaite être accompagné sur le portail":
-            result["what_it_means"] = "Un accompagnement peut être proposé sur le portail."
-            result["why_it_happens"] = (
-                "Certaines équipes paie peuvent prendre le contrôle du portail pour accompagner un salarié."
-            )
-            result["what_to_do"] = "Demandez un accompagnement ciblé sur votre démarche."
-            result["who_to_contact"] = "Contact paie / gestionnaire paie"
-
-    # -----------------------------------------------------
-    # ABSENCE
-    # -----------------------------------------------------
-    elif theme == "Absence":
-        if subtheme == "Arrêt maladie":
-            result["what_it_means"] = "L’arrêt maladie a un impact à la fois sur la paie et sur les flux IJSS."
-            result["why_it_happens"] = (
-                "L’absence est déduite de la paie, puis la Sécurité sociale peut verser des indemnités journalières. "
-                "Il peut aussi exister un maintien de salaire ou une subrogation."
-            )
-            result["what_to_do"] = "Vérifiez le bulletin, la période d’arrêt et les IJSS éventuelles."
-            result["who_to_contact"] = "Service paie"
-
-            if q1 == "Je veux comprendre la subrogation":
-                result["what_it_means"] = "La subrogation évite certains flux directs entre salarié et Sécurité sociale."
-                result["why_it_happens"] = (
-                    "L’employeur peut verser tout ou partie du salaire puis percevoir directement les IJSS."
-                )
-                result["what_to_do"] = "Vérifiez si l’employeur a mis en place la subrogation."
-            elif q1 == "Je veux comprendre l’impact paie":
-                result["why_it_happens"] = (
-                    "La paie peut varier à cause de la déduction de l’absence, des jours de carence, "
-                    "des IJSS et d’un éventuel maintien."
-                )
-
-        elif subtheme == "Enfant malade":
-            result["what_it_means"] = "Les jours enfant malade suivent des règles annuelles spécifiques."
-            result["why_it_happens"] = (
-                "Le nombre de jours dépend de l’âge des enfants, de leur nombre et de l’ancienneté."
-            )
-            result["what_to_do"] = "Vérifiez votre ancienneté et la situation familiale."
-            result["who_to_contact"] = "RH / paie"
-
-        elif subtheme == "Absence injustifiée / justifiée":
-            result["what_it_means"] = "L’impact paie dépend de la qualification exacte de l’absence."
-            result["why_it_happens"] = (
-                "Une absence injustifiée et une absence justifiée n’ont pas le même traitement."
-            )
-            result["what_to_do"] = "Vérifiez le justificatif et le type d’absence saisi."
-            result["who_to_contact"] = "RH / paie"
-
-        elif subtheme == "Je veux comprendre l’impact paie de mon absence":
-            result["what_it_means"] = "Une absence peut modifier le brut, le net et certains droits."
-            result["why_it_happens"] = (
-                "Selon sa nature, une absence peut entraîner une retenue, un maintien partiel "
-                "ou un décalage de traitement."
-            )
-            result["what_to_do"] = "Identifiez le type exact d’absence et le mois concerné."
-            result["who_to_contact"] = "Service paie"
-
-        elif subtheme == "Je veux comprendre la subrogation":
-            result["what_it_means"] = "La subrogation concerne les IJSS pendant l’arrêt."
-            result["why_it_happens"] = (
-                "L’employeur peut recevoir directement les indemnités journalières à la place du salarié."
-            )
-            result["what_to_do"] = "Vérifiez si la subrogation a été activée."
-            result["who_to_contact"] = "Service paie"
-
-    # -----------------------------------------------------
-    # CONGÉS
-    # -----------------------------------------------------
-    elif theme == "Congés":
-        if subtheme == "Congés payés":
-            result["what_it_means"] = "Le compteur congés peut regrouper plusieurs notions."
-            result["why_it_happens"] = (
-                "Le bulletin peut distinguer congés acquis, congés en cours, RTT et éventuellement jours spécifiques."
-            )
-            result["what_to_do"] = "Vérifiez le compteur concerné et la période."
-            result["who_to_contact"] = "Service paie / RH"
-
-        elif subtheme == "RTT / récupération":
-            result["what_it_means"] = "Les RTT et récupérations suivent des règles de compteur ou de validation."
-            result["why_it_happens"] = (
-                "Ils peuvent dépendre du temps de travail, d’une JPO/SPO ou d’une organisation spécifique."
-            )
-            result["what_to_do"] = "Vérifiez le compteur et la validation associée."
-            result["who_to_contact"] = "RH / paie"
-
-        elif subtheme == "Mariage / PACS":
-            result["what_it_means"] = "Le mariage ou PACS ouvre droit à une absence exceptionnelle."
-            result["why_it_happens"] = "Le droit existe sans condition d’ancienneté dans le cadre du parcours standard."
-            result["what_to_do"] = "Préparez le justificatif et positionnez l’absence dans un délai raisonnable."
-            result["who_to_contact"] = "RH / manager"
-
-        elif subtheme == "Décès":
-            result["what_it_means"] = "Le nombre de jours dépend du lien familial."
-            result["why_it_happens"] = (
-                "Le justificatif et parfois le livret de famille servent à déterminer le droit."
-            )
-            result["what_to_do"] = "Préparez les justificatifs et précisez le lien concerné."
-            result["who_to_contact"] = "RH / paie"
-
-        elif subtheme == "Jours de révision":
-            result["what_it_means"] = "Le droit dépend du statut et de la situation."
-            result["why_it_happens"] = "Les règles diffèrent entre apprenti et salarié hors apprentissage."
-            result["what_to_do"] = "Préparez la convocation et vérifiez votre statut."
-            result["who_to_contact"] = "RH"
-
-        elif subtheme == "Je ne comprends pas mon compteur":
-            result["what_it_means"] = "Le compteur peut regrouper plusieurs catégories de jours."
-            result["why_it_happens"] = (
-                "Selon les cas, il peut y avoir congés acquis, congés en cours, RTT, récupération ou jours spécifiques."
-            )
-            result["what_to_do"] = "Identifiez le compteur exact qui pose problème."
-            result["who_to_contact"] = "Service paie / RH"
-
-    # -----------------------------------------------------
-    # MUTUELLE
-    # -----------------------------------------------------
-    elif theme == "Mutuelle":
-        if subtheme == "La mutuelle est-elle obligatoire ?":
-            result["what_it_means"] = "La mutuelle d’entreprise est en principe obligatoire."
-            result["why_it_happens"] = "L’affiliation est généralement mise en place par défaut, sauf cas de dispense."
-            result["what_to_do"] = "Vérifiez si vous relevez d’un cas de dispense."
-            result["who_to_contact"] = "RH / partenaire mutuelle"
-
-        elif subtheme == "Je veux une dispense":
-            result["what_it_means"] = "Une dispense est possible dans certains cas uniquement."
-            result["why_it_happens"] = "La dispense doit être justifiée et peut devoir être renouvelée."
-            result["what_to_do"] = "Préparez les justificatifs correspondant à votre situation."
-            result["who_to_contact"] = "RH / organisme assureur"
-
-        elif subtheme == "Je n’ai pas répondu au mail d’affiliation":
-            result["what_it_means"] = "Le dossier peut rester incomplet tant que l’affiliation n’est pas finalisée."
-            result["why_it_happens"] = "Un délai est généralement prévu pour compléter l’affiliation."
-            result["what_to_do"] = "Demandez un nouveau lien si besoin."
-            result["who_to_contact"] = "Chargé RH"
-
-        elif subtheme == "Je vois une cotisation mutuelle":
-            result["what_it_means"] = "La cotisation est normale si aucune dispense valide n’a été enregistrée."
-            result["why_it_happens"] = "L’affiliation est active tant qu’aucune dispense reconnue n’est en place."
-            result["what_to_do"] = "Vérifiez si une dispense a été faite et acceptée."
-            result["who_to_contact"] = "RH"
-
-        elif subtheme == "Je veux comprendre ma situation mutuelle":
-            result["what_it_means"] = "Il faut identifier si le sujet porte sur l’affiliation, la dispense ou la cotisation."
-            result["why_it_happens"] = "Chaque sujet mutuelle suit un traitement différent."
-            result["what_to_do"] = "Précisez si votre question porte sur l’affiliation, la dispense ou le prélèvement."
-            result["who_to_contact"] = "RH / partenaire mutuelle"
-
-    # -----------------------------------------------------
-    # TRANSPORT
-    # -----------------------------------------------------
-    elif theme == "Transport":
-        if subtheme == "Remboursement Navigo":
-            result["what_it_means"] = "Le remboursement suppose une demande complète."
-            result["why_it_happens"] = (
-                "Le remboursement à 50 % nécessite une attestation, un justificatif de paiement "
-                "et une copie du pass Navigo."
-            )
-            result["what_to_do"] = "Vérifiez que les 3 justificatifs ont bien été transmis en un seul fichier."
-            result["who_to_contact"] = "Paie / RH"
-
-        elif subtheme == "Quels justificatifs fournir ?":
-            result["what_it_means"] = "Trois pièces sont attendues."
-            result["why_it_happens"] = "Le dossier doit être complet pour être traité."
-            result["what_to_do"] = (
-                "Préparez : attestation sur l’honneur, justificatif de paiement, copie du pass Navigo."
-            )
-            result["who_to_contact"] = "Paie / RH"
-
-        elif subtheme == "Ce qui n’est pas remboursé":
-            result["what_it_means"] = "Tous les titres ne sont pas éligibles."
-            result["why_it_happens"] = "Le Navigo Liberté+ et les tickets unitaires ne sont pas remboursés."
-            result["what_to_do"] = "Vérifiez le type exact d’abonnement utilisé."
-            result["who_to_contact"] = "Paie / RH"
-
-        elif subtheme == "Ma demande transport ne remonte pas":
-            result["what_it_means"] = "La demande peut être bloquée par le workflow ou la période."
-            result["why_it_happens"] = "Une validation manquante ou la période de gel peuvent retarder la remontée."
-            result["what_to_do"] = "Vérifiez la validation et la date de saisie."
-            result["who_to_contact"] = "Paie / contact paie"
-
-    # -----------------------------------------------------
-    # TICKET RESTAURANT
-    # -----------------------------------------------------
-    elif theme == "Ticket restaurant":
-        if subtheme == "Combien ai-je de tickets restaurant ?":
-            result["what_it_means"] = "Le nombre dépend des journées réellement éligibles."
-            result["why_it_happens"] = (
-                "Un ticket est attribué par journée travaillée d’au moins 6 heures "
-                "avec une pause d’au moins 30 minutes entre 12h00 et 14h00."
-            )
-            result["what_to_do"] = "Vérifiez les journées réellement éligibles."
-            result["who_to_contact"] = "Paie"
-
-        elif subtheme == "Comment déclarer mes tickets restaurant ?":
-            result["what_it_means"] = "La déclaration suit une fenêtre précise."
-            result["why_it_happens"] = "La saisie doit être faite avant le 20 du mois sur le portail."
-            result["what_to_do"] = "Déclarez dans Mon Portail Paie, rubrique appropriée."
-            result["who_to_contact"] = "RH / paie"
-
-        elif subtheme == "Je n’ai pas reçu ma carte":
-            result["what_it_means"] = "Le suivi peut dépendre directement du prestataire."
-            result["why_it_happens"] = "Certaines informations de livraison sont gérées côté Edenred."
-            result["what_to_do"] = "Contactez Edenred pour le suivi de la carte."
-            result["who_to_contact"] = "Edenred puis RH si besoin"
-
-        elif subtheme == "Je ne comprends pas mon nombre de tickets":
-            result["what_it_means"] = "Le nombre de tickets correspond aux journées éligibles déclarées."
-            result["why_it_happens"] = "Une journée non éligible ou non déclarée n’ouvre pas droit à un ticket."
-            result["what_to_do"] = "Recomptez les journées de travail répondant aux critères."
-            result["who_to_contact"] = "Paie"
-
-    # -----------------------------------------------------
-    # TÉLÉTRAVAIL
-    # -----------------------------------------------------
-    elif theme == "Télétravail":
-        if subtheme == "Pourquoi je n’ai pas la ligne télétravail ?":
-            result["what_it_means"] = "Le dossier télétravail est probablement incomplet ou non transmis."
-            result["why_it_happens"] = (
-                "L’allocation nécessite un avenant signé et une assurance habitation valide."
-            )
-            result["what_to_do"] = "Vérifiez l’avenant et l’attestation d’assurance."
-            result["who_to_contact"] = "RH / paie"
-
-        elif subtheme == "Quels documents faut-il ?":
-            result["what_it_means"] = "Deux documents sont indispensables."
-            result["why_it_happens"] = (
-                "Sans avenant signé ni assurance valide, l’allocation ne peut pas être mise en place."
-            )
-            result["what_to_do"] = "Préparez l’avenant signé et l’attestation d’assurance."
-            result["who_to_contact"] = "RH"
-
-        elif subtheme == "Mon avenant / assurance a été transmis":
-            result["what_it_means"] = "Le dossier semble prêt à être traité."
-            result["why_it_happens"] = (
-                "Une fois les documents transmis, un délai de traitement peut subsister avant apparition en paie."
-            )
-            result["what_to_do"] = "Vérifiez si le délai de traitement est écoulé."
-            result["who_to_contact"] = "RH / paie"
-
-        elif subtheme == "Je veux comprendre l’allocation télétravail":
-            result["what_it_means"] = "L’allocation dépend d’un dossier complet et validé."
-            result["why_it_happens"] = "Elle n’est pas automatique sans avenant et assurance valide."
-            result["what_to_do"] = "Vérifiez la présence et la validité des documents."
-            result["who_to_contact"] = "RH / paie"
-
-    # -----------------------------------------------------
-    # ACOMPTE
-    # -----------------------------------------------------
-    elif theme == "Acompte":
-        if subtheme == "Puis-je demander un acompte ?":
-            result["what_it_means"] = "Un acompte est possible sous conditions."
-            result["why_it_happens"] = (
-                "Il porte sur une rémunération déjà gagnée, contrairement à une avance."
-            )
-            result["what_to_do"] = "Vérifiez que les heures correspondant au montant ont bien été réalisées."
-            result["who_to_contact"] = "Service paie"
-
-        elif subtheme == "Je veux comprendre la différence entre acompte et avance":
-            result["what_it_means"] = "Acompte et avance ne correspondent pas à la même logique."
-            result["why_it_happens"] = (
-                "L’acompte porte sur du travail déjà effectué, alors que l’avance correspond à un salaire non encore gagné."
-            )
-            result["what_to_do"] = "Formulez la demande selon le bon mécanisme."
-            result["who_to_contact"] = "Service paie"
-
-        elif subtheme == "Je ne vois pas ma demande sur le portail":
-            result["what_it_means"] = "La demande peut ne pas avoir été enregistrée ou visible selon la période."
-            result["why_it_happens"] = "La saisie suit une fenêtre spécifique et peut dépendre des accès."
-            result["what_to_do"] = "Vérifiez la période de saisie et la présence de la demande."
-            result["who_to_contact"] = "Support / paie"
-
-        elif subtheme == "Je veux connaître la fenêtre de demande":
-            result["what_it_means"] = "L’acompte suit une période de demande définie."
-            result["why_it_happens"] = "La demande s’effectue sur une fenêtre précise via le portail."
-            result["what_to_do"] = "Consultez la période active sur Mon Portail Paie."
-            result["who_to_contact"] = "Paie"
-
-    # -----------------------------------------------------
-    # BULLETINS
-    # -----------------------------------------------------
-    elif theme == "Bulletins":
-        if subtheme == "Je veux accéder à mon bulletin":
-            result["what_it_means"] = "Le bulletin est disponible dans le coffre-fort électronique."
-            result["why_it_happens"] = "Les bulletins sont déposés dans Arkevia."
-            result["what_to_do"] = "Connectez-vous à Arkevia."
-            result["who_to_contact"] = "Paie si problème d’accès"
-
-        elif subtheme == "Je ne retrouve pas mon bulletin":
-            result["what_it_means"] = "Le bulletin peut être déposé mais non retrouvé dans le coffre."
-            result["why_it_happens"] = "Le problème peut venir d’un accès, d’un classement ou d’un compte différent."
-            result["what_to_do"] = "Vérifiez l’email utilisé, les dossiers et la période concernée."
-            result["who_to_contact"] = "Paie / support Arkevia"
-
-        elif subtheme == "Je veux comprendre comment fonctionne Arkevia":
-            result["what_it_means"] = "Arkevia est le coffre-fort électronique pour les bulletins."
-            result["why_it_happens"] = "L’accès se fait via activation puis connexion avec email personnel."
-            result["what_to_do"] = "Suivez le guide d’activation ou de connexion."
-            result["who_to_contact"] = "Paie / support Arkevia"
-
-        elif subtheme == "Je veux réinitialiser mon accès":
-            result["what_it_means"] = "L’accès peut être réinitialisé."
-            result["why_it_happens"] = "En cas d’oubli du mot de passe, un parcours de réinitialisation est prévu."
-            result["what_to_do"] = "Utilisez le lien “Mot de passe oublié ?”."
-            result["who_to_contact"] = "Support Arkevia / paie"
-
-        elif subtheme == "Importer mes anciens bulletins":
-            result["what_it_means"] = "Les anciens bulletins peuvent être centralisés."
-            result["why_it_happens"] = "Ils peuvent être importés depuis l’ancien coffre-fort."
-            result["what_to_do"] = "Téléchargez-les puis déposez-les dans Arkevia."
-            result["who_to_contact"] = "Support si besoin"
-
-    # -----------------------------------------------------
-    # DOCUMENTS DE SORTIE
-    # -----------------------------------------------------
-    elif theme == "Documents de sortie":
-        if subtheme == "Solde de tout compte":
-            result["what_it_means"] = "Le solde de tout compte fait partie des documents de fin de contrat."
-            result["why_it_happens"] = "Il récapitule les sommes versées à la sortie."
-            result["what_to_do"] = "Vérifiez la date de fin de contrat et la remise des documents."
-            result["who_to_contact"] = "RH / paie"
-
-        elif subtheme == "Certificat de travail":
-            result["what_it_means"] = "Le certificat de travail fait partie des documents de sortie."
-            result["why_it_happens"] = "Il est remis à la fin du contrat."
-            result["what_to_do"] = "Vérifiez si la sortie a été finalisée."
-            result["who_to_contact"] = "RH"
-
-        elif subtheme == "Attestation France Travail":
-            result["what_it_means"] = "L’attestation France Travail est un document de fin de contrat."
-            result["why_it_happens"] = "Elle est nécessaire pour les démarches chômage."
-            result["what_to_do"] = "Vérifiez si le contrat est bien clôturé."
-            result["who_to_contact"] = "RH / paie"
-
-        elif subtheme == "Je n’ai pas reçu mes documents de sortie":
-            result["what_it_means"] = "Les documents peuvent être en cours de préparation ou non encore transmis."
-            result["why_it_happens"] = "La finalisation du départ conditionne leur émission."
-            result["what_to_do"] = "Vérifiez la date de sortie effective."
-            result["who_to_contact"] = "RH / paie"
-
-        elif subtheme == "Je veux comprendre mes documents de fin de contrat":
-            result["what_it_means"] = "Chaque document a une fonction différente."
-            result["why_it_happens"] = (
-                "Solde de tout compte, certificat de travail et attestation France Travail "
-                "ne répondent pas au même besoin."
-            )
-            result["what_to_do"] = "Précisez le document concerné."
-            result["who_to_contact"] = "RH / paie"
-
-    # -----------------------------------------------------
-    # JPO / SPO
-    # -----------------------------------------------------
-    elif theme == "JPO ou SPO":
-        if subtheme == "Je veux comprendre les JPO / SPO":
-            result["what_it_means"] = "Les JPO / SPO suivent des règles spécifiques de déclaration et de traitement."
-            result["why_it_happens"] = (
-                "Selon le cas, elles peuvent donner lieu à récupération ou paiement."
-            )
-            result["what_to_do"] = "Vérifiez si l’événement a bien été déclaré et validé."
-            result["who_to_contact"] = "Manager / paie"
-
-        elif subtheme == "Je veux comprendre la récupération":
-            result["what_it_means"] = "Certaines JPO / SPO ouvrent droit à récupération."
-            result["why_it_happens"] = "Le traitement dépend du type de journée et de la règle appliquée."
-            result["what_to_do"] = "Vérifiez la règle de récupération appliquée."
-            result["who_to_contact"] = "Paie"
-
-        elif subtheme == "Je veux comprendre le paiement":
-            result["what_it_means"] = "Certaines JPO / SPO peuvent être payées."
-            result["why_it_happens"] = "Le paiement dépend de la règle déclenchée lors du traitement."
-            result["what_to_do"] = "Vérifiez si la JPO / SPO a été traitée en paiement ou en récupération."
-            result["who_to_contact"] = "Paie"
-
-        elif subtheme == "Je ne vois pas ma JPO / SPO":
-            result["what_it_means"] = "La déclaration peut ne pas encore avoir remonté."
-            result["why_it_happens"] = "Cela peut venir d’une validation manquante ou d’un délai de traitement."
-            result["what_to_do"] = "Vérifiez la saisie et le statut de validation."
-            result["who_to_contact"] = "Manager / paie"
-
-    # -----------------------------------------------------
-    # HEURES SUPPLÉMENTAIRES
-    # -----------------------------------------------------
-    elif theme == "Heures supplémentaires":
-        if subtheme == "Il manque des heures":
-            result["what_it_means"] = "L’absence des heures sur le bulletin ne signifie pas forcément une erreur."
-            result["why_it_happens"] = (
-                "Les heures suivent un circuit de validation manager → RH → paie."
-            )
-            result["what_to_do"] = "Vérifiez la date et la validation."
-            result["who_to_contact"] = "Manager / RH / paie"
-
-        elif subtheme == "Mes heures ont été faites avant le 15":
-            result["what_it_means"] = "Elles pouvaient potentiellement être intégrées sur la paie du mois."
-            result["why_it_happens"] = (
-                "Sous réserve de validation et de transmission complète."
-            )
-            result["what_to_do"] = "Vérifiez la validation manager et la transmission RH."
-            result["who_to_contact"] = "Manager / RH / paie"
-
-        elif subtheme == "Mes heures ont été faites après le 15":
-            result["what_it_means"] = "Le décalage sur le mois suivant peut être normal."
-            result["why_it_happens"] = "Les heures tardives sont souvent payées en M+1."
-            result["what_to_do"] = "Vérifiez le bulletin du mois suivant."
-            result["who_to_contact"] = "Paie si elles restent absentes ensuite"
-
-        elif subtheme == "Le manager n’a pas validé":
-            result["what_it_means"] = "Le circuit est bloqué au stade de validation."
-            result["why_it_happens"] = "Sans validation manager, la paie ne peut pas traiter correctement les heures."
-            result["what_to_do"] = "Demandez la validation du manager."
-            result["who_to_contact"] = "Manager"
-
-        elif subtheme == "Je veux comprendre le décalage de paiement":
-            result["what_it_means"] = "Le décalage peut être normal selon le moment de transmission."
-            result["why_it_happens"] = "Les heures transmises tardivement basculent souvent sur le mois suivant."
-            result["what_to_do"] = "Vérifiez la date de transmission."
-            result["who_to_contact"] = "RH / paie"
-
-    # -----------------------------------------------------
-    # DEMANDE DE DOCUMENTS
-    # -----------------------------------------------------
-    elif theme == "Demande de documents":
-        if subtheme == "Attestation employeur":
-            result["what_it_means"] = "La demande doit être formulée clairement."
-            result["why_it_happens"] = "Le type exact d’attestation conditionne le traitement."
-            result["what_to_do"] = "Précisez le type d’attestation employeur demandé."
-            result["who_to_contact"] = "RH / paie"
-
-        elif subtheme == "Attestation de salaire":
-            result["what_it_means"] = "L’attestation de salaire suit un circuit spécifique."
-            result["why_it_happens"] = "Elle est souvent liée à une absence ou un arrêt."
-            result["what_to_do"] = "Précisez la période et le motif."
-            result["who_to_contact"] = "Paie"
-
-        elif subtheme == "Duplicata de bulletin":
-            result["what_it_means"] = "Le duplicata peut souvent être récupéré via le coffre-fort."
-            result["why_it_happens"] = "Le document existe déjà dans l’espace de stockage électronique."
-            result["what_to_do"] = "Vérifiez d’abord Arkevia."
-            result["who_to_contact"] = "Paie"
-
-        elif subtheme == "Guide d’accès Arkevia":
-            result["what_it_means"] = "Le guide accompagne l’activation ou la connexion."
-            result["why_it_happens"] = "L’accès repose sur une procédure d’activation."
-            result["what_to_do"] = "Demandez le guide d’accès ou le code si besoin."
-            result["who_to_contact"] = "Paie / RH"
-
-        elif subtheme == "Autre document":
-            result["what_it_means"] = "Le document demandé n’est pas identifié précisément."
-            result["why_it_happens"] = "Le type exact de document change le bon interlocuteur."
-            result["what_to_do"] = "Précisez le document souhaité."
-            result["who_to_contact"] = "RH / paie"
-
-    else:
-        result["what_it_means"] = "Le besoin n’a pas pu être qualifié précisément."
-        result["why_it_happens"] = "Le parcours manque encore d’informations pour répondre de façon fiable."
-        result["what_to_do"] = "Revenez en arrière ou recommencez le parcours."
-        result["who_to_contact"] = "Service paie / RH"
-
-    return _finalize_result(result)
-
-
-# =========================================================
-# OUTILS
-# =========================================================
-def needs_free_message(subtheme: str) -> bool:
-    return subtheme in {"Mon sujet n’est pas dans la liste", "Autre document"}
-
-
-def render_progress() -> None:
-    current_step = min(st.session_state["step"], 5)
-    progress_map = {
-        1: 0.20,
-        2: 0.40,
-        3: 0.60,
-        4: 0.80,
-        5: 1.00,
-        99: 1.00,
-    }
-    st.progress(progress_map.get(st.session_state["step"], 0.20))
-    st.caption(f"Étape {current_step} sur 5")
-
-
-def render_context() -> None:
-    if all([
-        st.session_state["role"],
-        st.session_state["entity"],
-        st.session_state["theme"],
-    ]):
-        st.markdown('<div class="context-box">', unsafe_allow_html=True)
-        st.markdown("**Contexte sélectionné**")
-        st.write(f"Rôle : {st.session_state['role']}")
-        st.write(f"Entité : {st.session_state['entity']}")
-        st.write(f"Thème : {st.session_state['theme']}")
-        if st.session_state["subtheme"]:
-            st.write(f"Besoin : {st.session_state['subtheme']}")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-
-def render_result(result: Dict[str, str]) -> None:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("Réponse guidée")
-    st.markdown(f'<div class="topic-tag">{result["topic"]}</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="answer-card">', unsafe_allow_html=True)
-    st.markdown("**Ce que cela signifie**")
-    st.write(result["what_it_means"])
-
-    st.markdown("**Pourquoi cela arrive**")
-    st.write(result["why_it_happens"])
-
-    st.markdown("**Ce que vous devez faire**")
-    st.write(result["what_to_do"])
-
-    st.markdown("**Qui contacter si besoin**")
-    st.write(result["who_to_contact"])
+header_left, header_right = st.columns([6, 1.6])
+
+with header_left:
+    st.markdown('<div class="hero-card">', unsafe_allow_html=True)
+    top_left, top_right = st.columns([1, 5])
+    with top_left:
+        safe_display_image(LOGO_PATH, width=95)
+    with top_right:
+        st.markdown(f'<div class="karen-title">{APP_TITLE}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="karen-subtitle">{APP_SUBTITLE}</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="small-note">Un assistant RH / Paie conçu comme un véritable outil métier : il qualifie la demande, applique une logique de tri, propose une réponse utile et prépare une escalade propre si nécessaire.</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<span class="metric-pill">Guidé</span>'
+            '<span class="metric-pill">Fiable</span>'
+            '<span class="metric-pill">Présentable</span>'
+            '<span class="metric-pill">Sans IA externe</span>',
+            unsafe_allow_html=True,
+        )
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("**Réponse prête à copier**")
-    st.text_area(
-        "Vous pouvez copier ce texte",
-        value=result["ready_text"],
-        height=220,
-        key="copy_area"
+with header_right:
+    st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+    safe_display_image(AVATAR_GIF_PATH, width=140)
+    st.caption("Avatar KAREN")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# =========================================================
+# INTRO
+# =========================================================
+st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Parcours intelligent</div>', unsafe_allow_html=True)
+st.write(
+    "KAREN ne répond pas au hasard. L’outil pose les bonnes questions, qualifie le profil, "
+    "prend en compte le contexte RH / paie, puis génère une réponse structurée et actionnable."
+)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# =========================================================
+# FORMULAIRE + PANNEAU D'AIDE
+# =========================================================
+left, right = st.columns([1.15, 0.85])
+
+with left:
+    st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Qualification de la demande</div>', unsafe_allow_html=True)
+
+    role = st.radio("1. Votre question vous concerne en tant que :", USER_ROLES, horizontal=True)
+    entity = st.selectbox("2. Elle concerne un salarié de quelle entité ?", ENTITIES, index=0)
+    job_type = st.selectbox("3. Quel type d'emploi avez-vous ?", EMPLOYMENT_TYPES, index=0)
+    contract_type = st.radio("4. Quel est votre type de contrat ?", CONTRACT_TYPES, horizontal=True)
+    work_time = st.radio("5. Quel est votre temps de travail ?", WORK_TIMES, horizontal=True)
+    theme = st.selectbox("6. Quel est le thème de votre demande ?", list(THEMES.keys()), index=0)
+    need = st.selectbox("7. Quel est votre besoin précis ?", THEMES[theme], index=0)
+    free_text = st.text_area(
+        "8. Complément d'information",
+        placeholder="Exemple : mois concerné, message d’erreur, date exacte, rubrique du bulletin, justificatif transmis, niveau d’urgence…",
+        height=130,
+    )
+    generate = st.button("Analyser la demande", type="primary")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with right:
+    st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Moteur de décision</div>', unsafe_allow_html=True)
+    st.markdown(
+        """
+- Qualification du rôle
+- Identification de l'entité
+- Filtrage par emploi, contrat et temps de travail
+- Choix du thème puis du besoin précis
+- Réponse guidée
+- Préparation d'une escalade propre si nécessaire
+        """
     )
     st.markdown('</div>', unsafe_allow_html=True)
 
+    st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Conseil Streamlit Cloud</div>', unsafe_allow_html=True)
+    st.write(
+        "Pour afficher le logo et l’avatar dans Streamlit Cloud, placez `logo.png` et `avatar.gif` dans le même repo GitHub que `streamlit_app.py`."
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================================================
-# PROGRESSION + ACTIONS
+# ANALYSE
 # =========================================================
-render_progress()
-
-top1, top2 = st.columns([5, 1])
-with top2:
-    if st.button("↺ Recommencer", use_container_width=True):
-        reset_flow()
-        st.rerun()
-
-render_context()
-
-# =========================================================
-# ÉTAPE 1 : RÔLE
-# =========================================================
-if st.session_state["step"] == 1:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("1. Votre question vous concerne en tant que ?")
-
-    role = st.radio(
-        "Choisissez votre rôle",
-        ROLES,
-        index=None
+if generate:
+    result = build_response(theme, need, role, entity, job_type, contract_type, work_time, free_text)
+    subject, support_message = build_support_message(
+        role, entity, job_type, contract_type, work_time, theme, need, free_text
     )
 
-    c1, c2 = st.columns(2)
+    stat1, stat2, stat3 = st.columns(3)
+    stat1.metric("Thème", theme)
+    stat2.metric("Besoin", need[:25] + "..." if len(need) > 25 else need)
+    stat3.metric("Niveau", result["complexity_label"])
+
+    st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+    st.markdown(f"### {result['title']}")
+    st.markdown(f'<div class="success-box"><strong>Synthèse :</strong> {result["summary"]}</div>', unsafe_allow_html=True)
+
+    c1, c2 = st.columns([1, 1])
     with c1:
-        st.markdown('<div class="kpi">👤 Salarié<br><span class="muted">Question sur votre propre situation</span></div>', unsafe_allow_html=True)
+        st.markdown("#### Contexte identifié")
+        for line in result["context"]:
+            st.write(f"- {line}")
+
     with c2:
-        st.markdown('<div class="kpi">🧑‍💼 Manager<br><span class="muted">Question sur un salarié ou sur votre rôle de validation</span></div>', unsafe_allow_html=True)
+        st.markdown("#### Vérifications recommandées")
+        for item in result["checks"]:
+            st.write(f"- {item}")
 
-    if st.button("Continuer", type="primary", use_container_width=True):
-        if role:
-            st.session_state["role"] = role
-            set_step(2)
+    if result["alerts"]:
+        st.markdown('<div class="info-box"><strong>Règles métier détectées :</strong></div>', unsafe_allow_html=True)
+        for alert in result["alerts"]:
+            st.write(f"- {alert}")
 
+    st.markdown(f'<div class="warning-box"><strong>Action conseillée :</strong> {result["action"]}</div>', unsafe_allow_html=True)
+    st.write(f"**Interlocuteur recommandé :** {result['contact']}")
+    st.progress(result["complexity_score"] / 5)
+    st.caption(f"Score de complexité : {result['complexity_score']} / 5")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# =========================================================
-# ÉTAPE 2 : ENTITÉ
-# =========================================================
-elif st.session_state["step"] == 2:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("2. Elle concerne un salarié de quelle entité ?")
-
-    entity = st.selectbox(
-        "Choisissez l’entité",
-        [""] + ENTITIES
+    st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+    st.markdown("### Message prêt à transmettre")
+    st.text_input("Objet du message", value=subject)
+    st.text_area("Contenu du message", value=support_message, height=300)
+    st.download_button(
+        label="Télécharger le message (.txt)",
+        data=f"Objet : {subject}\n\n{support_message}",
+        file_name="message_karen.txt",
+        mime="text/plain",
+        use_container_width=True,
     )
-
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Retour", use_container_width=True):
-            set_step(1)
-
-    with col2:
-        if st.button("Continuer", type="primary", use_container_width=True):
-            if entity:
-                st.session_state["entity"] = entity
-                set_step(3)
-
     st.markdown('</div>', unsafe_allow_html=True)
-
-# =========================================================
-# ÉTAPE 3 : THÈME
-# =========================================================
-elif st.session_state["step"] == 3:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("3. Quel est le thème de votre demande ?")
-
-    theme = st.radio(
-        "Choisissez le thème",
-        THEMES,
-        index=None
+else:
+    st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+    st.markdown("### Réponse KAREN")
+    st.write(
+        "Complétez le parcours puis cliquez sur **Analyser la demande** pour obtenir une réponse structurée, "
+        "des vérifications ciblées, des règles métier détectées et un message prêt à transmettre."
     )
-
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Retour", use_container_width=True):
-            set_step(2)
-
-    with col2:
-        if st.button("Continuer", type="primary", use_container_width=True):
-            if theme:
-                st.session_state["theme"] = theme
-                set_step(4)
-
     st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================================================
-# ÉTAPE 4 : BESOIN PRÉCIS
+# FAQ / BLOC DÉMO
 # =========================================================
-elif st.session_state["step"] == 4:
-    theme = st.session_state["theme"]
-
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("4. Quel est votre besoin précis ?")
-
-    subtheme = st.radio(
-        "Choisissez le besoin",
-        SUBTHEMES[theme],
-        index=None
-    )
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        if st.button("Retour", use_container_width=True):
-            set_step(3)
-
-    with col2:
-        if st.button("Continuer", type="primary", use_container_width=True):
-            if subtheme:
-                st.session_state["subtheme"] = subtheme
-
-                if needs_free_message(subtheme):
-                    set_step(5)
-                else:
-                    st.session_state["result"] = build_structured_answer(
-                        st.session_state["role"],
-                        st.session_state["entity"],
-                        st.session_state["theme"],
-                        st.session_state["subtheme"],
-                    )
-                    set_step(99)
-
-    st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+st.markdown('<div class="section-title">FAQ métier embarquée</div>', unsafe_allow_html=True)
+faq_col1, faq_col2 = st.columns(2)
+with faq_col1:
+    st.write("- Ma paie")
+    st.write("- Mon Portail Paie")
+    st.write("- Absence")
+    st.write("- Congés")
+    st.write("- Mutuelle")
+    st.write("- Transport")
+    st.write("- Ticket restaurant")
+with faq_col2:
+    st.write("- Télétravail")
+    st.write("- Acompte")
+    st.write("- Bulletins")
+    st.write("- Documents de sortie")
+    st.write("- JPO ou SPO")
+    st.write("- Heures supplémentaires")
+    st.write("- Demande de documents")
+st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================================================
-# ÉTAPE 5 : MESSAGE LIBRE
-# =========================================================
-elif st.session_state["step"] == 5:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("5. Sujet non traité dans la liste")
-    st.caption("Décrivez votre besoin pour préparer un message clair à transmettre.")
-
-    free_message = st.text_area(
-        "Décrivez votre demande",
-        value=st.session_state.get("free_message", ""),
-        height=160
-    )
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        if st.button("Retour", use_container_width=True):
-            set_step(4)
-
-    with col2:
-        if st.button("Préparer le message", type="primary", use_container_width=True):
-            if free_message.strip():
-                st.session_state["free_message"] = free_message.strip()
-
-                ready_text = f"""Bonjour,
-
-Je vous contacte en tant que {st.session_state['role'].lower()}.
-
-Entité concernée : {st.session_state['entity']}
-Thème : {st.session_state['theme']}
-Besoin précis : {st.session_state['subtheme']}
-
-Description de la demande :
-{st.session_state['free_message']}
-
-Merci par avance pour votre aide.
-
-Cordialement,"""
-
-                st.session_state["result"] = {
-                    "topic": f"{st.session_state['role']} • {st.session_state['entity']} • {st.session_state['theme']} • {st.session_state['subtheme']}",
-                    "what_it_means": "Le sujet n’est pas couvert directement par l’agent.",
-                    "why_it_happens": "La demande nécessite une analyse humaine ou un traitement spécifique.",
-                    "what_to_do": "Transmettre le message préparé au bon interlocuteur.",
-                    "who_to_contact": "Service paie / RH / manager selon le sujet.",
-                    "ready_text": ready_text
-                }
-                set_step(99)
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# =========================================================
-# ÉTAPE FINALE
-# =========================================================
-elif st.session_state["step"] == 99:
-    render_result(st.session_state["result"])
-
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("**Actions**")
-    a1, a2, a3 = st.columns(3)
-
-    with a1:
-        if st.button("Nouvelle demande", use_container_width=True):
-            reset_flow()
-            st.rerun()
-
-    with a2:
-        if st.button("Revenir à l’étape précédente", use_container_width=True):
-            if needs_free_message(st.session_state["subtheme"]):
-                set_step(5)
-            else:
-                set_step(4)
-
-    with a3:
-        if st.button("Revenir au menu principal", use_container_width=True):
-            reset_flow()
-            st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# =========================================================
-# BAS DE PAGE
+# FOOTER
 # =========================================================
 st.markdown(
-    '<div class="footer-note">Cet agent guide le besoin avant de répondre afin de limiter les réponses hors sujet et d’orienter plus vite vers la bonne information.</div>',
-    unsafe_allow_html=True
+    """
+    <div style="text-align:center; color:#cbd5e1; font-size:0.92rem; padding: 1rem 0 2rem 0;">
+        KAREN — Agent RH / Paie guidé • Version Premium • Streamlit • Sans IA externe
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
