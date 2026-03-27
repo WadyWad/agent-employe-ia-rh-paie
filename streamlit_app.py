@@ -1,13 +1,17 @@
 import streamlit as st
 from openai import OpenAI
 
-# Config page
+# Configuration page
 st.set_page_config(page_title="Agent Employé IA", page_icon="🤖")
 
-# Connexion OpenAI
+# Vérification clé API
+if "OPENAI_API_KEY" not in st.secrets:
+    st.error("Clé API manquante. Vérifiez la configuration.")
+    st.stop()
+
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# UI
+# Interface
 st.title("🤖 Agent Employé IA – Assistant RH / Paie")
 
 st.info(
@@ -18,7 +22,7 @@ st.info(
 
 st.markdown("Posez votre question ou choisissez une action 👇")
 
-# Boutons rapides
+# Boutons
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -33,7 +37,7 @@ with col3:
     if st.button("⚠️ Signaler une anomalie"):
         st.session_state["pending_input"] = "Je pense qu’il y a une erreur sur mon bulletin"
 
-# Mémoire conversation
+# Mémoire
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -85,8 +89,11 @@ Tu dois :
 
                 answer = response.output[0].content[0].text
 
-            except Exception as e:
-                answer = f"Erreur IA : {e}"
+            except Exception:
+                answer = (
+                    "Le moteur IA est temporairement indisponible. "
+                    "Merci de réessayer dans quelques instants."
+                )
 
             st.write(answer)
 
