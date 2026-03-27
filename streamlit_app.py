@@ -594,9 +594,7 @@ with header_left:
     st.markdown("</div>", unsafe_allow_html=True)
 
 with header_right:
-    st.markdown('<div class="karen-card">', unsafe_allow_html=True)
-    render_avatar_html("idle", width=180)
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.empty()
 
 # =========================================================
 # INTRO
@@ -783,7 +781,6 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
     thinking_placeholder.empty()
 
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Conversation avec KAREN</div>', unsafe_allow_html=True)
     st.markdown(
         f'''<div class="chat-user">
             <div class="chat-label-user">VOUS</div>
@@ -802,23 +799,12 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
         </div>''',
         unsafe_allow_html=True,
     )
-
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.markdown('<div class="karen-card">', unsafe_allow_html=True)
-        st.markdown("#### Contexte identifié")
-        for line in result["context"]:
-            st.write(f"- {line}")
-        st.markdown("</div>", unsafe_allow_html=True)
-    with col_b:
-        st.markdown('<div class="karen-card">', unsafe_allow_html=True)
-        st.markdown("#### Vérifications recommandées")
-        for item in result["checks"]:
-            st.write(f"- {item}")
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("#### Vérifications recommandées")
+    for item in result["checks"]:
+        st.write(f"- {item}")
 
     if result["alerts"]:
-        st.markdown('<div class="info-box"><strong>Règles métier détectées :</strong></div>', unsafe_allow_html=True)
+        st.markdown('<div class="info-box"><strong>Points de vigilance :</strong></div>', unsafe_allow_html=True)
         for alert in result["alerts"]:
             st.write(f"- {alert}")
 
@@ -863,18 +849,6 @@ else:
         "des vérifications ciblées, des règles métier détectées et un message prêt à transmettre."
     )
     st.markdown("</div>", unsafe_allow_html=True)
-
-# =========================================================
-# AVATAR IA FLOTTANT
-# =========================================================
-st.markdown('<div class="avatar-box">', unsafe_allow_html=True)
-if st.session_state.step == 6 and st.session_state.theme and st.session_state.need:
-    render_avatar_html("answer", width=105)
-elif st.session_state.step == 5:
-    render_avatar_html("thinking", width=105)
-else:
-    render_avatar_html("idle", width=105)
-st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
 # FOOTER
