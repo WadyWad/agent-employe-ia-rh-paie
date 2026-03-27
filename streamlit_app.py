@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import datetime
 import os
 import time
+import base64
 
 st.set_page_config(
     page_title="KAREN — Agent RH / Paie",
@@ -229,150 +230,6 @@ RESPONSES = {
         "action": "Si l'accès reste bloqué, signalez le problème en précisant le message d'erreur affiché.",
         "contact": "Support RH / Paie ou support SIRH",
     },
-    ("Absence", "Je veux déclarer une absence"): {
-        "title": "Déclarer une absence",
-        "summary": "La déclaration dépend du motif d'absence et du circuit interne de validation. Le bon motif doit être sélectionné pour éviter un impact erroné en paie.",
-        "checks": [
-            "Identifier la nature exacte de l'absence.",
-            "Vérifier la période concernée.",
-            "Déposer le justificatif si requis.",
-            "S'assurer que la demande suit bien le circuit de validation.",
-        ],
-        "action": "Si vous ne savez pas quel motif choisir, contactez le support avant validation.",
-        "contact": "Manager / RH / Paie selon procédure interne",
-    },
-    ("Congés", "Je veux poser des congés"): {
-        "title": "Poser des congés",
-        "summary": "Avant dépôt, il faut vérifier le solde disponible, la période demandée et les règles de validation internes.",
-        "checks": [
-            "Vérifier votre solde de congés.",
-            "Contrôler les dates demandées.",
-            "S'assurer que la demande est faite dans le bon module.",
-            "Informer votre manager si nécessaire.",
-        ],
-        "action": "En cas de blocage, notez le message affiché et la période concernée.",
-        "contact": "Manager / RH / Paie",
-    },
-    ("Mutuelle", "Je veux demander une dispense"): {
-        "title": "Demande de dispense mutuelle",
-        "summary": "Une dispense de mutuelle n'est possible que dans certains cas prévus. Un justificatif est généralement nécessaire et doit être transmis selon la procédure prévue.",
-        "checks": [
-            "Vérifier si votre situation entre dans un cas de dispense.",
-            "Préparer le justificatif demandé.",
-            "Vérifier si un formulaire spécifique existe.",
-            "Respecter le délai de transmission.",
-        ],
-        "action": "Si vous ne savez pas si vous êtes éligible, demandez une confirmation avant envoi du dossier.",
-        "contact": "RH / organisme de gestion mutuelle selon procédure",
-    },
-    ("Transport", "Je veux demander un remboursement transport"): {
-        "title": "Remboursement transport",
-        "summary": "La demande nécessite généralement un justificatif valide et dépend de la situation du salarié ainsi que des règles internes applicables.",
-        "checks": [
-            "Vérifier que votre abonnement / justificatif est valide.",
-            "Contrôler la période couverte.",
-            "Vérifier le canal de dépôt prévu.",
-            "S'assurer que le document est lisible.",
-        ],
-        "action": "En cas de rejet ou retard, demandez la raison précise et la période traitée.",
-        "contact": "RH / Paie",
-    },
-    ("Ticket restaurant", "Je n'ai pas reçu ma carte / mes titres"): {
-        "title": "Carte ou titres non reçus",
-        "summary": "Un retard peut venir d'une commande en cours, d'une adresse incorrecte ou d'un problème d'activation / livraison.",
-        "checks": [
-            "Vérifier l'adresse enregistrée.",
-            "Vérifier votre éligibilité et votre date d'entrée.",
-            "Contrôler si une commande a bien été lancée.",
-            "Préciser s'il s'agit d'une première demande ou d'un renouvellement.",
-        ],
-        "action": "Si la situation dure, demander une vérification de l'état de commande ou une réédition si nécessaire.",
-        "contact": "RH / Paie / gestionnaire titres restaurant",
-    },
-    ("Télétravail", "Je veux faire une demande"): {
-        "title": "Demande de télétravail",
-        "summary": "La demande dépend de votre éligibilité, de l'organisation de votre poste et des règles internes de l'entité.",
-        "checks": [
-            "Vérifier si votre poste est éligible.",
-            "Vérifier le nombre de jours autorisés.",
-            "Suivre le circuit de validation prévu.",
-            "Contrôler si un avenant ou une formalisation est requis.",
-        ],
-        "action": "Si besoin, rapprochez-vous de votre manager avant dépôt officiel.",
-        "contact": "Manager / RH",
-    },
-    ("Acompte", "Je veux demander un acompte"): {
-        "title": "Demander un acompte",
-        "summary": "L'acompte suit généralement une procédure précise et peut dépendre de la date de demande et de votre situation contractuelle.",
-        "checks": [
-            "Vérifier si vous êtes éligible.",
-            "Vérifier la date limite de demande.",
-            "Préparer le canal de demande prévu.",
-            "Préciser le mois concerné.",
-        ],
-        "action": "Si la procédure n'est pas claire, préparez une demande simple avec votre identité, l'entité et le mois concerné.",
-        "contact": "Paie / RH",
-    },
-    ("Bulletins", "Je veux récupérer un bulletin"): {
-        "title": "Récupération d'un bulletin",
-        "summary": "Le bulletin est généralement disponible sur le portail dédié. En cas d'absence du document, il faut vérifier la période, l'accès et la mise à disposition.",
-        "checks": [
-            "Vérifier le bon mois.",
-            "Tester un autre navigateur si besoin.",
-            "Vérifier si le bulletin a déjà été publié.",
-            "Confirmer que vous êtes sur le bon espace documentaire.",
-        ],
-        "action": "Si le bulletin est introuvable, signalez le mois exact concerné.",
-        "contact": "Paie / support portail",
-    },
-    ("Documents de sortie", "Je veux savoir quand je recevrai mes documents"): {
-        "title": "Réception des documents de sortie",
-        "summary": "Les documents de sortie sont transmis selon le calendrier de traitement interne après la fin du contrat et la finalisation des éléments nécessaires.",
-        "checks": [
-            "Vérifier votre date de fin de contrat.",
-            "Vérifier si tous les éléments ont bien été remontés.",
-            "Identifier les documents attendus.",
-            "Vérifier l'adresse ou le canal de transmission prévu.",
-        ],
-        "action": "Si un document manque, précisez lequel pour accélérer le traitement.",
-        "contact": "RH / Paie",
-    },
-    ("JPO ou SPO", "Je veux comprendre pourquoi la récupération est bloquée"): {
-        "title": "Récupération JPO / SPO bloquée",
-        "summary": "La récupération peut être bloquée si la journée n'a pas encore été validée complètement, si elle n'est pas sur un mois révolu ou si le mauvais motif a été utilisé.",
-        "checks": [
-            "Vérifier que la JPO / SPO a bien été saisie.",
-            "Vérifier que le processus de validation est terminé.",
-            "Vérifier que la journée est sur un mois révolu.",
-            "Contrôler le motif d'activité utilisé.",
-        ],
-        "action": "En cas de doute, transmettre la date exacte et une capture de la saisie effectuée.",
-        "contact": "RH / Paie / manager selon circuit",
-    },
-    ("Heures supplémentaires", "Je veux comprendre leur paiement"): {
-        "title": "Comprendre le paiement des heures supplémentaires",
-        "summary": "Le paiement dépend de la validation, de la période de paie, du statut du salarié et des règles applicables à l'entité et au contrat.",
-        "checks": [
-            "Vérifier que les heures ont bien été validées.",
-            "Contrôler le mois de réalisation.",
-            "Vérifier si une régularisation est en cours.",
-            "Préciser la période exacte concernée.",
-        ],
-        "action": "Si elles n'apparaissent pas, demandez un contrôle en indiquant les dates et le volume concerné.",
-        "contact": "Manager / Paie",
-    },
-    ("Demande de documents", "Je veux une attestation employeur"): {
-        "title": "Demande d'attestation employeur",
-        "summary": "Pour traiter rapidement la demande, il faut préciser le type exact d'attestation attendu, l'usage prévu et le délai souhaité.",
-        "checks": [
-            "Préciser le type d'attestation.",
-            "Préciser l'organisme destinataire si besoin.",
-            "Indiquer l'urgence éventuelle.",
-            "Vérifier le format attendu si connu.",
-        ],
-        "action": "Préparez une demande claire indiquant l'usage du document.",
-        "contact": "RH / Administration du personnel",
-    },
 }
 
 DEFAULT_RESPONSE = {
@@ -404,13 +261,21 @@ def render_avatar_html(state="idle", width=140):
         "answer": "🔴 KAREN vous répond",
     }
     safe_state = state if state in labels else "idle"
+
+    if os.path.exists(AVATAR_GIF_PATH):
+        with open(AVATAR_GIF_PATH, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode("utf-8")
+        img_html = f'<img src="data:image/gif;base64,{b64}" width="{width}">'
+    else:
+        img_html = '<div style="font-size:54px;">🤖</div>'
+
     st.markdown(
-        f"""
+        f'''
         <div style="text-align:center;">
-            <img src="giphy.gif" width="{width}">
+            {img_html}
             <div style="color:#f8fafc; font-size:12px; margin-top:6px; font-weight:600;">{labels[safe_state]}</div>
         </div>
-        """,
+        ''',
         unsafe_allow_html=True,
     )
 
@@ -596,7 +461,7 @@ st.markdown(
             position: fixed;
             right: 22px;
             bottom: 18px;
-            width: 140px;
+            width: 150px;
             z-index: 999;
             background: rgba(17,24,39,0.92);
             border: 1px solid rgba(255,255,255,0.10);
@@ -604,21 +469,6 @@ st.markdown(
             padding: 0.7rem;
             box-shadow: 0 10px 25px rgba(0,0,0,0.30);
             text-align: center;
-        }
-        .avatar-label {
-            color: #cbd5e1;
-            font-size: 0.78rem;
-            margin-top: 0.35rem;
-        }
-        .pulse-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #22c55e;
-            box-shadow: 0 0 0 rgba(34,197,94,0.7);
-            animation: pulse 1.8s infinite;
-            margin-right: 0.35rem;
         }
         .thinking-ring {
             width: 42px;
@@ -632,11 +482,6 @@ st.markdown(
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
-            100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
         }
         .stButton > button {
             width: 100%;
@@ -657,15 +502,52 @@ st.markdown(
             color: white !important;
             border-radius: 12px !important;
         }
+        div[data-baseweb="popover"] * {
+            color: #ffffff !important;
+            background-color: #0b1220 !important;
+        }
+        li[role="option"] {
+            color: #ffffff !important;
+            background-color: #0b1220 !important;
+        }
+        li[role="option"]:hover {
+            background-color: #172554 !important;
+        }
+        .stSelectbox div[role="combobox"] * {
+            color: #ffffff !important;
+        }
+        .chat-user {
+            background: rgba(30,58,138,0.35);
+            border: 1px solid rgba(96,165,250,0.35);
+            border-radius: 18px 18px 4px 18px;
+            padding: 0.95rem 1rem;
+            margin-bottom: 0.8rem;
+        }
+        .chat-karen {
+            background: rgba(153,27,27,0.20);
+            border: 1px solid rgba(239,68,68,0.25);
+            border-radius: 18px 18px 18px 4px;
+            padding: 0.95rem 1rem;
+            margin-bottom: 0.8rem;
+        }
+        .chat-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #93c5fd;
+            margin-bottom: 0.35rem;
+        }
+        .chat-label-user {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #fca5a5;
+            margin-bottom: 0.35rem;
+        }
         .stRadio label,
         .stMarkdown,
         .stCaption,
         .stSelectbox label,
         .stTextArea label,
         .stTextInput label,
-        .st-emotion-cache-16txtl3,
-        .st-emotion-cache-10trblm,
-        .st-emotion-cache-q8sbsg,
         p,
         label,
         span,
@@ -858,17 +740,10 @@ with right:
         st.write(f"- Contrat : {st.session_state.contract_type}")
     if st.session_state.work_time:
         st.write(f"- Temps : {st.session_state.work_time}")
-    if st.session_state.theme:
+    if st.session_state.theme and st.session_state.step < 6:
         st.write(f"- Thème : {st.session_state.theme}")
-    if st.session_state.need:
+    if st.session_state.need and st.session_state.step < 6:
         st.write(f"- Besoin : {st.session_state.need}")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown('<div class="karen-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Conseil Streamlit Cloud</div>', unsafe_allow_html=True)
-    st.write(
-        "Pour afficher le logo et l’avatar dans Streamlit Cloud, placez `images.png` et `giphy.gif` dans le même repo GitHub que `streamlit_app.py`."
-    )
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
@@ -907,28 +782,40 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
     )
     thinking_placeholder.empty()
 
-    stat1, stat2, stat3 = st.columns(3)
-    stat1.metric("Thème", st.session_state.theme)
-    stat2.metric("Besoin", st.session_state.need[:25] + "..." if len(st.session_state.need) > 25 else st.session_state.need)
-    stat3.metric("Niveau", result["complexity_label"])
-
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
-    st.markdown(f"### {result['title']}")
+    st.markdown('<div class="section-title">Conversation avec KAREN</div>', unsafe_allow_html=True)
     st.markdown(
-        f'<div class="success-box"><strong>Synthèse :</strong> {result["summary"]}</div>',
+        f'''<div class="chat-user">
+            <div class="chat-label-user">VOUS</div>
+            Bonjour KAREN, je suis <strong>{st.session_state.role}</strong> de l'entité <strong>{st.session_state.entity}</strong>.
+            Mon profil est <strong>{st.session_state.job_type}</strong>, en <strong>{st.session_state.contract_type}</strong>, à <strong>{st.session_state.work_time}</strong>.
+            Mon sujet concerne <strong>{st.session_state.theme}</strong> et plus précisément : <strong>{st.session_state.need}</strong>.
+            {f'<br><br>Complément transmis : {st.session_state.free_text}' if st.session_state.free_text else ''}
+        </div>''',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f'''<div class="chat-karen">
+            <div class="chat-label">KAREN</div>
+            <strong>{result["title"]}</strong><br><br>
+            {result["summary"]}
+        </div>''',
         unsafe_allow_html=True,
     )
 
-    c1, c2 = st.columns([1, 1])
-    with c1:
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.markdown('<div class="karen-card">', unsafe_allow_html=True)
         st.markdown("#### Contexte identifié")
         for line in result["context"]:
             st.write(f"- {line}")
-
-    with c2:
+        st.markdown("</div>", unsafe_allow_html=True)
+    with col_b:
+        st.markdown('<div class="karen-card">', unsafe_allow_html=True)
         st.markdown("#### Vérifications recommandées")
         for item in result["checks"]:
             st.write(f"- {item}")
+        st.markdown("</div>", unsafe_allow_html=True)
 
     if result["alerts"]:
         st.markdown('<div class="info-box"><strong>Règles métier détectées :</strong></div>', unsafe_allow_html=True)
@@ -943,12 +830,17 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
     st.progress(result["complexity_score"] / 5)
     st.caption(f"Score de complexité : {result['complexity_score']} / 5")
 
-    if st.button("Nouvelle conversation avec KAREN"):
-        for key in ["role", "entity", "job_type", "contract_type", "work_time", "theme", "need", "free_text"]:
-            st.session_state[key] = None if key != "free_text" else ""
-        st.session_state.step = 1
-        st.rerun()
-
+    c1, c2 = st.columns([1, 1.3])
+    with c1:
+        if st.button("Revenir à l'étape précédente"):
+            st.session_state.step = 5
+            st.rerun()
+    with c2:
+        if st.button("Nouvelle conversation avec KAREN"):
+            for key in ["role", "entity", "job_type", "contract_type", "work_time", "theme", "need", "free_text"]:
+                st.session_state[key] = None if key != "free_text" else ""
+            st.session_state.step = 1
+            st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
@@ -973,35 +865,13 @@ else:
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
-# FAQ / BLOC DÉMO
-# =========================================================
-st.markdown('<div class="karen-card">', unsafe_allow_html=True)
-st.markdown('<div class="section-title">FAQ métier embarquée</div>', unsafe_allow_html=True)
-faq_col1, faq_col2 = st.columns(2)
-with faq_col1:
-    st.write("- Ma paie")
-    st.write("- Mon Portail Paie")
-    st.write("- Absence")
-    st.write("- Congés")
-    st.write("- Mutuelle")
-    st.write("- Transport")
-    st.write("- Ticket restaurant")
-with faq_col2:
-    st.write("- Télétravail")
-    st.write("- Acompte")
-    st.write("- Bulletins")
-    st.write("- Documents de sortie")
-    st.write("- JPO ou SPO")
-    st.write("- Heures supplémentaires")
-    st.write("- Demande de documents")
-st.markdown("</div>", unsafe_allow_html=True)
-
-# =========================================================
 # AVATAR IA FLOTTANT
 # =========================================================
 st.markdown('<div class="avatar-box">', unsafe_allow_html=True)
 if st.session_state.step == 6 and st.session_state.theme and st.session_state.need:
     render_avatar_html("answer", width=105)
+elif st.session_state.step == 5:
+    render_avatar_html("thinking", width=105)
 else:
     render_avatar_html("idle", width=105)
 st.markdown("</div>", unsafe_allow_html=True)
