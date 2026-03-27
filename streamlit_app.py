@@ -11,17 +11,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# =========================================================
-# CONFIG UI
-# =========================================================
 APP_TITLE = "KAREN"
 APP_SUBTITLE = "Agent RH / Paie guidé — version premium"
 LOGO_PATH = "images.png"
 AVATAR_GIF_PATH = "giphy.gif"
 
-# =========================================================
-# DONNÉES MÉTIER
-# =========================================================
 ENTITIES = [
     "PSB - Paris School of Business",
     "IESA Arts & Culture",
@@ -230,6 +224,150 @@ RESPONSES = {
         "action": "Si l'accès reste bloqué, signalez le problème en précisant le message d'erreur affiché.",
         "contact": "Support RH / Paie ou support SIRH",
     },
+    ("Absence", "Je veux déclarer une absence"): {
+        "title": "Déclarer une absence",
+        "summary": "La déclaration dépend du motif d'absence et du circuit interne de validation. Le bon motif doit être sélectionné pour éviter un impact erroné en paie.",
+        "checks": [
+            "Identifier la nature exacte de l'absence.",
+            "Vérifier la période concernée.",
+            "Déposer le justificatif si requis.",
+            "S'assurer que la demande suit bien le circuit de validation.",
+        ],
+        "action": "Si vous ne savez pas quel motif choisir, contactez le support avant validation.",
+        "contact": "Manager / RH / Paie selon procédure interne",
+    },
+    ("Congés", "Je veux poser des congés"): {
+        "title": "Poser des congés",
+        "summary": "Avant dépôt, il faut vérifier le solde disponible, la période demandée et les règles de validation internes.",
+        "checks": [
+            "Vérifier votre solde de congés.",
+            "Contrôler les dates demandées.",
+            "S'assurer que la demande est faite dans le bon module.",
+            "Informer votre manager si nécessaire.",
+        ],
+        "action": "En cas de blocage, notez le message affiché et la période concernée.",
+        "contact": "Manager / RH / Paie",
+    },
+    ("Mutuelle", "Je veux demander une dispense"): {
+        "title": "Demande de dispense mutuelle",
+        "summary": "Une dispense de mutuelle n'est possible que dans certains cas prévus. Un justificatif est généralement nécessaire et doit être transmis selon la procédure prévue.",
+        "checks": [
+            "Vérifier si votre situation entre dans un cas de dispense.",
+            "Préparer le justificatif demandé.",
+            "Vérifier si un formulaire spécifique existe.",
+            "Respecter le délai de transmission.",
+        ],
+        "action": "Si vous ne savez pas si vous êtes éligible, demandez une confirmation avant envoi du dossier.",
+        "contact": "RH / organisme de gestion mutuelle selon procédure",
+    },
+    ("Transport", "Je veux demander un remboursement transport"): {
+        "title": "Remboursement transport",
+        "summary": "La demande nécessite généralement un justificatif valide et dépend de la situation du salarié ainsi que des règles internes applicables.",
+        "checks": [
+            "Vérifier que votre abonnement / justificatif est valide.",
+            "Contrôler la période couverte.",
+            "Vérifier le canal de dépôt prévu.",
+            "S'assurer que le document est lisible.",
+        ],
+        "action": "En cas de rejet ou retard, demandez la raison précise et la période traitée.",
+        "contact": "RH / Paie",
+    },
+    ("Ticket restaurant", "Je n'ai pas reçu ma carte / mes titres"): {
+        "title": "Carte ou titres non reçus",
+        "summary": "Un retard peut venir d'une commande en cours, d'une adresse incorrecte ou d'un problème d'activation / livraison.",
+        "checks": [
+            "Vérifier l'adresse enregistrée.",
+            "Vérifier votre éligibilité et votre date d'entrée.",
+            "Contrôler si une commande a bien été lancée.",
+            "Préciser s'il s'agit d'une première demande ou d'un renouvellement.",
+        ],
+        "action": "Si la situation dure, demander une vérification de l'état de commande ou une réédition si nécessaire.",
+        "contact": "RH / Paie / gestionnaire titres restaurant",
+    },
+    ("Télétravail", "Je veux faire une demande"): {
+        "title": "Demande de télétravail",
+        "summary": "La demande dépend de votre éligibilité, de l'organisation de votre poste et des règles internes de l'entité.",
+        "checks": [
+            "Vérifier si votre poste est éligible.",
+            "Vérifier le nombre de jours autorisés.",
+            "Suivre le circuit de validation prévu.",
+            "Contrôler si un avenant ou une formalisation est requis.",
+        ],
+        "action": "Si besoin, rapprochez-vous de votre manager avant dépôt officiel.",
+        "contact": "Manager / RH",
+    },
+    ("Acompte", "Je veux demander un acompte"): {
+        "title": "Demander un acompte",
+        "summary": "L'acompte suit généralement une procédure précise et peut dépendre de la date de demande et de votre situation contractuelle.",
+        "checks": [
+            "Vérifier si vous êtes éligible.",
+            "Vérifier la date limite de demande.",
+            "Préparer le canal de demande prévu.",
+            "Préciser le mois concerné.",
+        ],
+        "action": "Si la procédure n'est pas claire, préparez une demande simple avec votre identité, l'entité et le mois concerné.",
+        "contact": "Paie / RH",
+    },
+    ("Bulletins", "Je veux récupérer un bulletin"): {
+        "title": "Récupération d'un bulletin",
+        "summary": "Le bulletin est généralement disponible sur le portail dédié. En cas d'absence du document, il faut vérifier la période, l'accès et la mise à disposition.",
+        "checks": [
+            "Vérifier le bon mois.",
+            "Tester un autre navigateur si besoin.",
+            "Vérifier si le bulletin a déjà été publié.",
+            "Confirmer que vous êtes sur le bon espace documentaire.",
+        ],
+        "action": "Si le bulletin est introuvable, signalez le mois exact concerné.",
+        "contact": "Paie / support portail",
+    },
+    ("Documents de sortie", "Je veux savoir quand je recevrai mes documents"): {
+        "title": "Réception des documents de sortie",
+        "summary": "Les documents de sortie sont transmis selon le calendrier de traitement interne après la fin du contrat et la finalisation des éléments nécessaires.",
+        "checks": [
+            "Vérifier votre date de fin de contrat.",
+            "Vérifier si tous les éléments ont bien été remontés.",
+            "Identifier les documents attendus.",
+            "Vérifier l'adresse ou le canal de transmission prévu.",
+        ],
+        "action": "Si un document manque, précisez lequel pour accélérer le traitement.",
+        "contact": "RH / Paie",
+    },
+    ("JPO ou SPO", "Je veux comprendre pourquoi la récupération est bloquée"): {
+        "title": "Récupération JPO / SPO bloquée",
+        "summary": "La récupération peut être bloquée si la journée n'a pas encore été validée complètement, si elle n'est pas sur un mois révolu ou si le mauvais motif a été utilisé.",
+        "checks": [
+            "Vérifier que la JPO / SPO a bien été saisie.",
+            "Vérifier que le processus de validation est terminé.",
+            "Vérifier que la journée est sur un mois révolu.",
+            "Contrôler le motif d'activité utilisé.",
+        ],
+        "action": "En cas de doute, transmettre la date exacte et une capture de la saisie effectuée.",
+        "contact": "RH / Paie / manager selon circuit",
+    },
+    ("Heures supplémentaires", "Je veux comprendre leur paiement"): {
+        "title": "Comprendre le paiement des heures supplémentaires",
+        "summary": "Le paiement dépend de la validation, de la période de paie, du statut du salarié et des règles applicables à l'entité et au contrat.",
+        "checks": [
+            "Vérifier que les heures ont bien été validées.",
+            "Contrôler le mois de réalisation.",
+            "Vérifier si une régularisation est en cours.",
+            "Préciser la période exacte concernée.",
+        ],
+        "action": "Si elles n'apparaissent pas, demandez un contrôle en indiquant les dates et le volume concerné.",
+        "contact": "Manager / Paie",
+    },
+    ("Demande de documents", "Je veux une attestation employeur"): {
+        "title": "Demande d'attestation employeur",
+        "summary": "Pour traiter rapidement la demande, il faut préciser le type exact d'attestation attendu, l'usage prévu et le délai souhaité.",
+        "checks": [
+            "Préciser le type d'attestation.",
+            "Préciser l'organisme destinataire si besoin.",
+            "Indiquer l'urgence éventuelle.",
+            "Vérifier le format attendu si connu.",
+        ],
+        "action": "Préparez une demande claire indiquant l'usage du document.",
+        "contact": "RH / Administration du personnel",
+    },
 }
 
 DEFAULT_RESPONSE = {
@@ -244,9 +382,7 @@ DEFAULT_RESPONSE = {
     "contact": "Support RH / Paie",
 }
 
-# =========================================================
-# FONCTIONS
-# =========================================================
+
 def safe_display_image(path, width=None):
     if isinstance(path, str) and path.startswith("http"):
         st.image(path, width=width)
@@ -270,12 +406,12 @@ def render_avatar_html(state="idle", width=140):
         img_html = '<div style="font-size:54px;">🤖</div>'
 
     st.markdown(
-        f'''
+        f"""
         <div style="text-align:center;">
             {img_html}
             <div style="color:#f8fafc; font-size:12px; margin-top:6px; font-weight:600;">{labels[safe_state]}</div>
         </div>
-        ''',
+        """,
         unsafe_allow_html=True,
     )
 
@@ -370,9 +506,6 @@ Cordialement,
     return subject, body
 
 
-# =========================================================
-# STYLE
-# =========================================================
 st.markdown(
     """
     <style>
@@ -422,53 +555,6 @@ st.markdown(
         .small-note {
             font-size: 0.94rem;
             color: #e5e7eb;
-        }
-        .metric-pill {
-            display: inline-block;
-            padding: 0.42rem 0.8rem;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.12);
-            color: white;
-            font-size: 0.9rem;
-            margin-right: 0.45rem;
-            margin-bottom: 0.35rem;
-        }
-        .success-box {
-            background: #052e16;
-            border-left: 5px solid #22c55e;
-            padding: 0.9rem 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            color: white;
-        }
-        .warning-box {
-            background: #450a0a;
-            border-left: 5px solid #dc2626;
-            padding: 0.9rem 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            color: white;
-        }
-        .info-box {
-            background: #082f49;
-            border-left: 5px solid #38bdf8;
-            padding: 0.9rem 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            color: white;
-        }
-        .avatar-box {
-            position: fixed;
-            right: 22px;
-            bottom: 18px;
-            width: 150px;
-            z-index: 999;
-            background: rgba(17,24,39,0.92);
-            border: 1px solid rgba(255,255,255,0.10);
-            border-radius: 18px;
-            padding: 0.7rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.30);
-            text-align: center;
         }
         .thinking-ring {
             width: 42px;
@@ -559,17 +645,11 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# =========================================================
-# SIDEBAR
-# =========================================================
 with st.sidebar:
     st.markdown("## KAREN")
     st.caption("Agent RH / Paie guidé")
     render_avatar_html("idle", width=150)
 
-# =========================================================
-# HEADER
-# =========================================================
 header_left, header_right = st.columns([6, 1.6])
 
 with header_left:
@@ -584,21 +664,11 @@ with header_left:
             '<div class="small-note">Un assistant RH / Paie conçu comme un véritable outil métier : il qualifie la demande, applique une logique de tri, propose une réponse utile et prépare une escalade propre si nécessaire.</div>',
             unsafe_allow_html=True,
         )
-        st.markdown(
-            '<span class="metric-pill">Guidé</span>'
-            '<span class="metric-pill">Fiable</span>'
-            '<span class="metric-pill">Présentable</span>'
-            '<span class="metric-pill">Sans IA externe</span>',
-            unsafe_allow_html=True,
-        )
     st.markdown("</div>", unsafe_allow_html=True)
 
 with header_right:
     st.empty()
 
-# =========================================================
-# INTRO
-# =========================================================
 st.markdown('<div class="karen-card">', unsafe_allow_html=True)
 st.markdown('<div class="section-title">Parcours intelligent</div>', unsafe_allow_html=True)
 st.write(
@@ -607,9 +677,6 @@ st.write(
 )
 st.markdown("</div>", unsafe_allow_html=True)
 
-# =========================================================
-# ÉTAT DE CONVERSATION
-# =========================================================
 if "step" not in st.session_state:
     st.session_state.step = 1
 if "role" not in st.session_state:
@@ -629,9 +696,6 @@ if "need" not in st.session_state:
 if "free_text" not in st.session_state:
     st.session_state.free_text = ""
 
-# =========================================================
-# FORMULAIRE CONVERSATIONNEL
-# =========================================================
 left, right = st.columns([1.15, 0.85])
 
 with left:
@@ -744,9 +808,6 @@ with right:
         st.write(f"- Besoin : {st.session_state.need}")
     st.markdown("</div>", unsafe_allow_html=True)
 
-# =========================================================
-# ANALYSE
-# =========================================================
 if st.session_state.step == 6 and st.session_state.theme and st.session_state.need:
     thinking_placeholder = st.empty()
     with thinking_placeholder.container():
@@ -782,21 +843,21 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
 
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
     st.markdown(
-        f'''<div class="chat-user">
+        f"""<div class="chat-user">
             <div class="chat-label-user">VOUS</div>
             Bonjour KAREN, je suis <strong>{st.session_state.role}</strong> de l'entité <strong>{st.session_state.entity}</strong>.
             Mon profil est <strong>{st.session_state.job_type}</strong>, en <strong>{st.session_state.contract_type}</strong>, à <strong>{st.session_state.work_time}</strong>.
             Mon sujet concerne <strong>{st.session_state.theme}</strong> et plus précisément : <strong>{st.session_state.need}</strong>.
             {f'<br><br>Complément transmis : {st.session_state.free_text}' if st.session_state.free_text else ''}
-        </div>''',
+        </div>""",
         unsafe_allow_html=True,
     )
     st.markdown(
-        f'''<div class="chat-karen">
+        f"""<div class="chat-karen">
             <div class="chat-label">KAREN</div>
             <strong>{result["title"]}</strong><br><br>
             {result["summary"]}
-        </div>''',
+        </div>""",
         unsafe_allow_html=True,
     )
     st.markdown("#### Vérifications recommandées")
@@ -827,6 +888,7 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
                 st.session_state[key] = None if key != "free_text" else ""
             st.session_state.step = 1
             st.rerun()
+
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
@@ -850,9 +912,6 @@ else:
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
-# =========================================================
-# FOOTER
-# =========================================================
 st.markdown(
     """
     <div style="text-align:center; color:#cbd5e1; font-size:0.92rem; padding: 1rem 0 2rem 0;">
