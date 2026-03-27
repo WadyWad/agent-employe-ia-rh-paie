@@ -66,20 +66,20 @@ ENTITIES = [
 ]
 
 EMPLOYMENT_TYPES = [
-    "Administrative - Cadre jours",
-    "Administrative - Cadre heures",
-    "Administrative - Technicien",
-    "Administrative - Employé",
-    "Apprentie",
+    "Administratif - Cadre au forfait jours",
+    "Administratif - Cadre en heures",
+    "Administratif - Technicien(ne)",
+    "Administratif - Employé(e)",
+    "Apprenti(e)",
     "Stagiaire",
-    "Enseignant",
-    "Model vivant",
-    "Surveillant",
+    "Enseignant(e)",
+    "Modèle vivant",
+    "Surveillant(e)",
 ]
 
 CONTRACT_TYPES = ["CDI", "CDD"]
 WORK_TIMES = ["Temps plein", "Temps partiel"]
-USER_ROLES = ["Salarié", "Manager"]
+USER_ROLES = ["Salarié(e)", "Manager"]
 
 THEMES = {
     "Ma paie": [
@@ -397,6 +397,24 @@ def safe_display_image(path, width=None):
         st.image(path, width=width)
 
 
+def render_avatar_html(state="idle", width=140):
+    labels = {
+        "idle": "🟢 KAREN en veille",
+        "thinking": "🔵 KAREN réfléchit",
+        "answer": "🔴 KAREN vous répond",
+    }
+    safe_state = state if state in labels else "idle"
+    st.markdown(
+        f"""
+        <div style="text-align:center;">
+            <img src="giphy.gif" width="{width}">
+            <div style="color:#f8fafc; font-size:12px; margin-top:6px; font-weight:600;">{labels[safe_state]}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def get_complexity_score(theme, need, free_text):
     score = 1
     if "Autre besoin" in need:
@@ -418,12 +436,12 @@ def get_complexity_label(score):
 
 def get_rule_based_alerts(role, job_type, contract_type, work_time, theme):
     alerts = []
-    if job_type == "Enseignant" and theme in ["Heures supplémentaires", "JPO ou SPO", "Ma paie"]:
-        alerts.append("Pour les enseignants, la vérification des heures, variables et remontées pédagogiques est prioritaire.")
+    if job_type == "Enseignant(e)" and theme in ["Heures supplémentaires", "JPO ou SPO", "Ma paie"]:
+        alerts.append("Pour les enseignant(e)s, la vérification des heures, variables et remontées pédagogiques est prioritaire.")
     if job_type == "Stagiaire":
-        alerts.append("Pour un stagiaire, certaines rubriques paie ou avantages peuvent suivre des règles spécifiques.")
-    if job_type == "Apprentie":
-        alerts.append("Pour une apprentie, le contrat, l'âge et le mois d'exécution peuvent influer sur le traitement paie.")
+        alerts.append("Pour un(e) stagiaire, certaines rubriques paie ou avantages peuvent suivre des règles spécifiques.")
+    if job_type == "Apprenti(e)":
+        alerts.append("Pour un(e) apprenti(e), le contrat, l'âge et le mois d'exécution peuvent influer sur le traitement paie.")
     if work_time == "Temps partiel":
         alerts.append("Le temps partiel peut modifier les droits, soldes, montants et contrôles attendus.")
     if contract_type == "CDD" and theme == "Documents de sortie":
@@ -475,7 +493,7 @@ Voici les éléments de contexte :
 - Besoin précis : {need}
 
 Description complémentaire :
-{free_text if free_text else 'Merci de trouver ci-dessus les éléments nécessaires à l’analyse de ma demande.'}
+{free_text if free_text else "Merci de trouver ci-dessus les éléments nécessaires à l’analyse de ma demande."}
 
 Pouvez-vous m’indiquer la marche à suivre ou procéder à la vérification nécessaire ?
 
@@ -644,7 +662,14 @@ st.markdown(
         .stCaption,
         .stSelectbox label,
         .stTextArea label,
-        .stTextInput label {
+        .stTextInput label,
+        .st-emotion-cache-16txtl3,
+        .st-emotion-cache-10trblm,
+        .st-emotion-cache-q8sbsg,
+        p,
+        label,
+        span,
+        div {
             color: #f8fafc !important;
         }
     </style>
@@ -656,22 +681,9 @@ st.markdown(
 # SIDEBAR
 # =========================================================
 with st.sidebar:
-    safe_display_image(LOGO_PATH, width=110)
     st.markdown("## KAREN")
     st.caption("Agent RH / Paie guidé")
-    st.markdown("---")
-    st.markdown("### Navigation")
-    st.markdown("- Qualification")
-    st.markdown("- Analyse")
-    st.markdown("- Message prêt à transmettre")
-    st.markdown("- FAQ métier")
-    st.markdown("---")
-    st.markdown("### Atouts démo")
-    st.markdown("- Sans OpenAI")
-    st.markdown("- Parcours guidé")
-    st.markdown("- Règles métier")
-    st.markdown("- Escalade propre")
-    st.markdown("- Compatible Streamlit Cloud")
+    render_avatar_html("idle", width=150)
 
 # =========================================================
 # HEADER
@@ -697,13 +709,12 @@ with header_left:
             '<span class="metric-pill">Sans IA externe</span>',
             unsafe_allow_html=True,
         )
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 with header_right:
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
-    safe_display_image(AVATAR_GIF_PATH, width=140)
-    st.caption("Avatar KAREN")
-    st.markdown('</div>', unsafe_allow_html=True)
+    render_avatar_html("idle", width=180)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
 # INTRO
@@ -714,76 +725,191 @@ st.write(
     "KAREN ne répond pas au hasard. L’outil pose les bonnes questions, qualifie le profil, "
     "prend en compte le contexte RH / paie, puis génère une réponse structurée et actionnable."
 )
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
-# FORMULAIRE + PANNEAU D'AIDE
+# ÉTAT DE CONVERSATION
+# =========================================================
+if "step" not in st.session_state:
+    st.session_state.step = 1
+if "role" not in st.session_state:
+    st.session_state.role = None
+if "entity" not in st.session_state:
+    st.session_state.entity = None
+if "job_type" not in st.session_state:
+    st.session_state.job_type = None
+if "contract_type" not in st.session_state:
+    st.session_state.contract_type = None
+if "work_time" not in st.session_state:
+    st.session_state.work_time = None
+if "theme" not in st.session_state:
+    st.session_state.theme = None
+if "need" not in st.session_state:
+    st.session_state.need = None
+if "free_text" not in st.session_state:
+    st.session_state.free_text = ""
+
+# =========================================================
+# FORMULAIRE CONVERSATIONNEL
 # =========================================================
 left, right = st.columns([1.15, 0.85])
 
 with left:
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Qualification de la demande</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Conversation avec KAREN</div>', unsafe_allow_html=True)
 
-    role = st.radio("1. Votre question vous concerne en tant que :", USER_ROLES, horizontal=True)
-    entity = st.selectbox("2. Elle concerne un salarié de quelle entité ?", ENTITIES, index=0)
-    job_type = st.selectbox("3. Quel type d'emploi avez-vous ?", EMPLOYMENT_TYPES, index=0)
-    contract_type = st.radio("4. Quel est votre type de contrat ?", CONTRACT_TYPES, horizontal=True)
-    work_time = st.radio("5. Quel est votre temps de travail ?", WORK_TIMES, horizontal=True)
-    theme = st.selectbox("6. Quel est le thème de votre demande ?", list(THEMES.keys()), index=0)
-    need = st.selectbox("7. Quel est votre besoin précis ?", THEMES[theme], index=0)
-    free_text = st.text_area(
-        "8. Complément d'information",
-        placeholder="Exemple : mois concerné, message d’erreur, date exacte, rubrique du bulletin, justificatif transmis, niveau d’urgence…",
-        height=130,
-    )
-    generate = st.button("Analyser la demande", type="primary")
-    st.markdown('</div>', unsafe_allow_html=True)
+    if st.session_state.step == 1:
+        st.write("**KAREN :** Bonjour. Votre question vous concerne en tant que ?")
+        role = st.radio("Choisissez votre profil", USER_ROLES, key="role_step")
+        if st.button("Valider le profil"):
+            st.session_state.role = role
+            st.session_state.step = 2
+            st.rerun()
+
+    elif st.session_state.step == 2:
+        st.write(f"**KAREN :** Très bien. Profil identifié : **{st.session_state.role}**.")
+        entity = st.selectbox("Elle concerne un salarié de quelle entité ?", ENTITIES, key="entity_step")
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("Retour au profil"):
+                st.session_state.step = 1
+                st.rerun()
+        with c2:
+            if st.button("Valider l'entité"):
+                st.session_state.entity = entity
+                st.session_state.step = 3
+                st.rerun()
+
+    elif st.session_state.step == 3:
+        st.write(f"**KAREN :** Entité enregistrée : **{st.session_state.entity}**.")
+        job_type = st.selectbox("Quel type d'emploi avez-vous ?", EMPLOYMENT_TYPES, key="job_type_step")
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("Retour à l'entité"):
+                st.session_state.step = 2
+                st.rerun()
+        with c2:
+            if st.button("Valider le type d'emploi"):
+                st.session_state.job_type = job_type
+                st.session_state.step = 4
+                st.rerun()
+
+    elif st.session_state.step == 4:
+        st.write(f"**KAREN :** Type d'emploi retenu : **{st.session_state.job_type}**.")
+        contract_type = st.radio("Quel est votre type de contrat ?", CONTRACT_TYPES, key="contract_step", horizontal=True)
+        work_time = st.radio("Quel est votre temps de travail ?", WORK_TIMES, key="work_time_step", horizontal=True)
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("Retour au type d'emploi"):
+                st.session_state.step = 3
+                st.rerun()
+        with c2:
+            if st.button("Valider le contrat et le temps de travail"):
+                st.session_state.contract_type = contract_type
+                st.session_state.work_time = work_time
+                st.session_state.step = 5
+                st.rerun()
+
+    elif st.session_state.step == 5:
+        st.write("**KAREN :** Nous allons maintenant qualifier votre demande.")
+        theme = st.selectbox("Quel est le thème de votre demande ?", list(THEMES.keys()), key="theme_step")
+        need = st.selectbox("Quel est votre besoin précis ?", THEMES[theme], key="need_step")
+        free_text = st.text_area(
+            "Ajoutez un complément d'information si nécessaire",
+            value=st.session_state.free_text,
+            placeholder="Exemple : mois concerné, message d’erreur, date exacte, rubrique du bulletin, justificatif transmis, niveau d’urgence…",
+            height=130,
+            key="free_text_step",
+        )
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            if st.button("Retour"):
+                st.session_state.step = 4
+                st.rerun()
+        with c2:
+            if st.button("Réinitialiser"):
+                for key in ["role", "entity", "job_type", "contract_type", "work_time", "theme", "need", "free_text"]:
+                    st.session_state[key] = None if key != "free_text" else ""
+                st.session_state.step = 1
+                st.rerun()
+        with c3:
+            if st.button("Analyser la demande", type="primary"):
+                st.session_state.theme = theme
+                st.session_state.need = need
+                st.session_state.free_text = free_text
+                st.session_state.step = 6
+                st.rerun()
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 with right:
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Moteur de décision</div>', unsafe_allow_html=True)
-    st.markdown(
-        """
-- Qualification du rôle
-- Identification de l'entité
-- Filtrage par emploi, contrat et temps de travail
-- Choix du thème puis du besoin précis
-- Réponse guidée
-- Préparation d'une escalade propre si nécessaire
-        """
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Progression</div>', unsafe_allow_html=True)
+    progress_value = (st.session_state.step - 1) / 5 if st.session_state.step <= 6 else 1
+    st.progress(progress_value)
+    st.caption(f"Étape {min(st.session_state.step, 6)} sur 6")
+    if st.session_state.role:
+        st.write(f"- Profil : {st.session_state.role}")
+    if st.session_state.entity:
+        st.write(f"- Entité : {st.session_state.entity}")
+    if st.session_state.job_type:
+        st.write(f"- Emploi : {st.session_state.job_type}")
+    if st.session_state.contract_type:
+        st.write(f"- Contrat : {st.session_state.contract_type}")
+    if st.session_state.work_time:
+        st.write(f"- Temps : {st.session_state.work_time}")
+    if st.session_state.theme:
+        st.write(f"- Thème : {st.session_state.theme}")
+    if st.session_state.need:
+        st.write(f"- Besoin : {st.session_state.need}")
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">Conseil Streamlit Cloud</div>', unsafe_allow_html=True)
     st.write(
         "Pour afficher le logo et l’avatar dans Streamlit Cloud, placez `images.png` et `giphy.gif` dans le même repo GitHub que `streamlit_app.py`."
     )
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
 # ANALYSE
 # =========================================================
-if generate:
+if st.session_state.step == 6 and st.session_state.theme and st.session_state.need:
     thinking_placeholder = st.empty()
     with thinking_placeholder.container():
         st.markdown('<div class="karen-card">', unsafe_allow_html=True)
         st.markdown('<div class="section-title">KAREN analyse votre demande</div>', unsafe_allow_html=True)
+        render_avatar_html("thinking", width=180)
         st.markdown('<div class="thinking-ring"></div>', unsafe_allow_html=True)
         st.write("Qualification du profil, lecture du besoin, application des règles métier et préparation de la réponse...")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
     time.sleep(0.8)
 
-    result = build_response(theme, need, role, entity, job_type, contract_type, work_time, free_text)
+    result = build_response(
+        st.session_state.theme,
+        st.session_state.need,
+        st.session_state.role,
+        st.session_state.entity,
+        st.session_state.job_type,
+        st.session_state.contract_type,
+        st.session_state.work_time,
+        st.session_state.free_text,
+    )
     subject, support_message = build_support_message(
-        role, entity, job_type, contract_type, work_time, theme, need, free_text
+        st.session_state.role,
+        st.session_state.entity,
+        st.session_state.job_type,
+        st.session_state.contract_type,
+        st.session_state.work_time,
+        st.session_state.theme,
+        st.session_state.need,
+        st.session_state.free_text,
     )
     thinking_placeholder.empty()
 
     stat1, stat2, stat3 = st.columns(3)
-    stat1.metric("Thème", theme)
-    stat2.metric("Besoin", need[:25] + "..." if len(need) > 25 else need)
+    stat1.metric("Thème", st.session_state.theme)
+    stat2.metric("Besoin", st.session_state.need[:25] + "..." if len(st.session_state.need) > 25 else st.session_state.need)
     stat3.metric("Niveau", result["complexity_label"])
 
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
@@ -816,7 +942,14 @@ if generate:
     st.write(f"**Interlocuteur recommandé :** {result['contact']}")
     st.progress(result["complexity_score"] / 5)
     st.caption(f"Score de complexité : {result['complexity_score']} / 5")
-    st.markdown('</div>', unsafe_allow_html=True)
+
+    if st.button("Nouvelle conversation avec KAREN"):
+        for key in ["role", "entity", "job_type", "contract_type", "work_time", "theme", "need", "free_text"]:
+            st.session_state[key] = None if key != "free_text" else ""
+        st.session_state.step = 1
+        st.rerun()
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
     st.markdown("### Message prêt à transmettre")
@@ -829,15 +962,15 @@ if generate:
         mime="text/plain",
         use_container_width=True,
     )
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 else:
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
     st.markdown("### Réponse KAREN")
     st.write(
-        "Complétez le parcours puis cliquez sur **Analyser la demande** pour obtenir une réponse structurée, "
+        "Avancez étape par étape dans la conversation avec KAREN pour obtenir une réponse structurée, "
         "des vérifications ciblées, des règles métier détectées et un message prêt à transmettre."
     )
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
 # FAQ / BLOC DÉMO
@@ -861,15 +994,17 @@ with faq_col2:
     st.write("- JPO ou SPO")
     st.write("- Heures supplémentaires")
     st.write("- Demande de documents")
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
 # AVATAR IA FLOTTANT
 # =========================================================
 st.markdown('<div class="avatar-box">', unsafe_allow_html=True)
-safe_display_image(AVATAR_GIF_PATH, width=90)
-st.markdown('<div class="avatar-label"><span class="pulse-dot"></span>KAREN en veille</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+if st.session_state.step == 6 and st.session_state.theme and st.session_state.need:
+    render_avatar_html("answer", width=105)
+else:
+    render_avatar_html("idle", width=105)
+st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
 # FOOTER
