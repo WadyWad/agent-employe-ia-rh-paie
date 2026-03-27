@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime
 import os
+import time
 
 st.set_page_config(
     page_title="KAREN — Agent RH / Paie",
@@ -16,13 +17,6 @@ APP_TITLE = "KAREN"
 APP_SUBTITLE = "Agent RH / Paie guidé — version premium"
 LOGO_PATH = "images.png"
 AVATAR_GIF_PATH = "giphy.gif"
-PRIMARY_BLUE = "#0f172a"
-SECONDARY_BLUE = "#1e3a8a"
-ACCENT_RED = "#991b1b"
-BRIGHT_RED = "#dc2626"
-CARD_BG = "#111827"
-TEXT_MAIN = "#f8fafc"
-TEXT_SOFT = "#cbd5e1"
 
 # =========================================================
 # DONNÉES MÉTIER
@@ -419,7 +413,7 @@ def get_complexity_label(score):
         return "Simple"
     if score == 3:
         return "Intermédiaire"
-    return "Sensibile / à vérifier"
+    return "Sensible / à vérifier"
 
 
 def get_rule_based_alerts(role, job_type, contract_type, work_time, theme):
@@ -497,17 +491,17 @@ Cordialement,
 # STYLE
 # =========================================================
 st.markdown(
-    f"""
+    """
     <style>
-        .stApp {{
-            background: linear-gradient(180deg, {PRIMARY_BLUE} 0%, #172554 45%, #0f172a 100%);
-            color: {TEXT_MAIN};
-        }}
-        section[data-testid="stSidebar"] {{
+        .stApp {
+            background: linear-gradient(180deg, #0f172a 0%, #172554 45%, #0f172a 100%);
+            color: #f8fafc;
+        }
+        section[data-testid="stSidebar"] {
             background: linear-gradient(180deg, #111827 0%, #0b1120 100%);
             border-right: 1px solid rgba(255,255,255,0.06);
-        }}
-        .karen-card {{
+        }
+        .karen-card {
             background: rgba(17,24,39,0.92);
             border-radius: 22px;
             padding: 1.2rem;
@@ -515,39 +509,39 @@ st.markdown(
             border: 1px solid rgba(255,255,255,0.06);
             margin-bottom: 1rem;
             backdrop-filter: blur(4px);
-        }}
-        .hero-card {{
-            background: linear-gradient(135deg, {SECONDARY_BLUE} 0%, {ACCENT_RED} 100%);
+        }
+        .hero-card {
+            background: linear-gradient(135deg, #1e3a8a 0%, #991b1b 100%);
             border-radius: 24px;
             padding: 1.4rem;
             color: white;
             box-shadow: 0 12px 30px rgba(0,0,0,0.25);
             margin-bottom: 1rem;
-        }}
-        .karen-title {{
+        }
+        .karen-title {
             font-size: 2.2rem;
             font-weight: 900;
             letter-spacing: 0.5px;
             color: white;
             margin-bottom: 0.15rem;
-        }}
-        .karen-subtitle {{
+        }
+        .karen-subtitle {
             font-size: 1rem;
             color: #fee2e2;
             margin-bottom: 0.75rem;
-        }}
-        .section-title {{
+        }
+        .section-title {
             font-size: 1.08rem;
             font-weight: 800;
             color: #93c5fd;
             margin-bottom: 0.45rem;
-        }}
-        .small-note {{
+        }
+        .small-note {
             font-size: 0.94rem;
             color: #e5e7eb;
-        }}
-        .metric-pill {{
-            display:inline-block;
+        }
+        .metric-pill {
+            display: inline-block;
             padding: 0.42rem 0.8rem;
             border-radius: 999px;
             background: rgba(255,255,255,0.12);
@@ -555,31 +549,31 @@ st.markdown(
             font-size: 0.9rem;
             margin-right: 0.45rem;
             margin-bottom: 0.35rem;
-        }}
-        .success-box {{
+        }
+        .success-box {
             background: #052e16;
             border-left: 5px solid #22c55e;
             padding: 0.9rem 1rem;
             border-radius: 12px;
             margin-bottom: 1rem;
             color: white;
-        }}
-        .warning-box {{
+        }
+        .warning-box {
             background: #450a0a;
-            border-left: 5px solid {BRIGHT_RED};
+            border-left: 5px solid #dc2626;
             padding: 0.9rem 1rem;
             border-radius: 12px;
             margin-bottom: 1rem;
             color: white;
-        }}
-        .info-box {{
+        }
+        .info-box {
             background: #082f49;
             border-left: 5px solid #38bdf8;
             padding: 0.9rem 1rem;
             border-radius: 12px;
             margin-bottom: 1rem;
             color: white;
-        }}
+        }
         .avatar-box {
             position: fixed;
             right: 22px;
@@ -622,38 +616,37 @@ st.markdown(
             100% { transform: rotate(360deg); }
         }
         @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(34,197,94,0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(34,197,94,0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(34,197,94,0);
-            }
-        }}
-        .stButton>button {{
+            0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
+            100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+        }
+        .stButton > button {
             width: 100%;
-            background: linear-gradient(90deg, {ACCENT_RED} 0%, {BRIGHT_RED} 100%);
+            background: linear-gradient(90deg, #991b1b 0%, #dc2626 100%);
             color: white;
             border: none;
             border-radius: 12px;
             font-weight: 700;
             padding: 0.7rem 1rem;
-        }}
-        .stButton>button:hover {{
+        }
+        .stButton > button:hover {
             filter: brightness(1.05);
-        }}
+        }
         div[data-baseweb="select"] > div,
         .stTextInput input,
-        .stTextArea textarea {{
+        .stTextArea textarea {
             background-color: #0b1220 !important;
             color: white !important;
             border-radius: 12px !important;
-        }}
-        .stRadio label, .stMarkdown, .stCaption, .stSelectbox label, .stTextArea label, .stTextInput label {{
-            color: {TEXT_MAIN} !important;
-        }}
+        }
+        .stRadio label,
+        .stMarkdown,
+        .stCaption,
+        .stSelectbox label,
+        .stTextArea label,
+        .stTextInput label {
+            color: #f8fafc !important;
+        }
     </style>
     """,
     unsafe_allow_html=True,
@@ -765,7 +758,7 @@ with right:
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">Conseil Streamlit Cloud</div>', unsafe_allow_html=True)
     st.write(
-        "Pour afficher le logo et l’avatar dans Streamlit Cloud, placez `logo.png` et `avatar.gif` dans le même repo GitHub que `streamlit_app.py`."
+        "Pour afficher le logo et l’avatar dans Streamlit Cloud, placez `images.png` et `giphy.gif` dans le même repo GitHub que `streamlit_app.py`."
     )
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -780,12 +773,13 @@ if generate:
         st.markdown('<div class="thinking-ring"></div>', unsafe_allow_html=True)
         st.write("Qualification du profil, lecture du besoin, application des règles métier et préparation de la réponse...")
         st.markdown('</div>', unsafe_allow_html=True)
+    time.sleep(0.8)
 
     result = build_response(theme, need, role, entity, job_type, contract_type, work_time, free_text)
-    thinking_placeholder.empty()
     subject, support_message = build_support_message(
         role, entity, job_type, contract_type, work_time, theme, need, free_text
     )
+    thinking_placeholder.empty()
 
     stat1, stat2, stat3 = st.columns(3)
     stat1.metric("Thème", theme)
@@ -794,7 +788,10 @@ if generate:
 
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
     st.markdown(f"### {result['title']}")
-    st.markdown(f'<div class="success-box"><strong>Synthèse :</strong> {result["summary"]}</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="success-box"><strong>Synthèse :</strong> {result["summary"]}</div>',
+        unsafe_allow_html=True,
+    )
 
     c1, c2 = st.columns([1, 1])
     with c1:
@@ -812,7 +809,10 @@ if generate:
         for alert in result["alerts"]:
             st.write(f"- {alert}")
 
-    st.markdown(f'<div class="warning-box"><strong>Action conseillée :</strong> {result["action"]}</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="warning-box"><strong>Action conseillée :</strong> {result["action"]}</div>',
+        unsafe_allow_html=True,
+    )
     st.write(f"**Interlocuteur recommandé :** {result['contact']}")
     st.progress(result["complexity_score"] / 5)
     st.caption(f"Score de complexité : {result['complexity_score']} / 5")
