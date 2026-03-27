@@ -14,8 +14,8 @@ st.set_page_config(
 # =========================================================
 APP_TITLE = "KAREN"
 APP_SUBTITLE = "Agent RH / Paie guidé — version premium"
-LOGO_PATH = "logo.png"
-AVATAR_GIF_PATH = "avatar.gif"
+LOGO_PATH = "images.png"
+AVATAR_GIF_PATH = "giphy.gif"
 PRIMARY_BLUE = "#0f172a"
 SECONDARY_BLUE = "#1e3a8a"
 ACCENT_RED = "#991b1b"
@@ -580,23 +580,57 @@ st.markdown(
             margin-bottom: 1rem;
             color: white;
         }}
-        .avatar-box {{
+        .avatar-box {
             position: fixed;
             right: 22px;
             bottom: 18px;
-            width: 110px;
+            width: 140px;
             z-index: 999;
-            background: rgba(17,24,39,0.88);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(17,24,39,0.92);
+            border: 1px solid rgba(255,255,255,0.10);
             border-radius: 18px;
-            padding: 0.55rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            padding: 0.7rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.30);
             text-align: center;
-        }}
-        .avatar-label {{
+        }
+        .avatar-label {
             color: #cbd5e1;
-            font-size: 0.75rem;
+            font-size: 0.78rem;
             margin-top: 0.35rem;
+        }
+        .pulse-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 rgba(34,197,94,0.7);
+            animation: pulse 1.8s infinite;
+            margin-right: 0.35rem;
+        }
+        .thinking-ring {
+            width: 42px;
+            height: 42px;
+            border: 4px solid rgba(255,255,255,0.18);
+            border-top: 4px solid #60a5fa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0.2rem auto 0.6rem auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(34,197,94,0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(34,197,94,0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(34,197,94,0);
+            }
         }}
         .stButton>button {{
             width: 100%;
@@ -739,7 +773,16 @@ with right:
 # ANALYSE
 # =========================================================
 if generate:
+    thinking_placeholder = st.empty()
+    with thinking_placeholder.container():
+        st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">KAREN analyse votre demande</div>', unsafe_allow_html=True)
+        st.markdown('<div class="thinking-ring"></div>', unsafe_allow_html=True)
+        st.write("Qualification du profil, lecture du besoin, application des règles métier et préparation de la réponse...")
+        st.markdown('</div>', unsafe_allow_html=True)
+
     result = build_response(theme, need, role, entity, job_type, contract_type, work_time, free_text)
+    thinking_placeholder.empty()
     subject, support_message = build_support_message(
         role, entity, job_type, contract_type, work_time, theme, need, free_text
     )
@@ -818,6 +861,14 @@ with faq_col2:
     st.write("- JPO ou SPO")
     st.write("- Heures supplémentaires")
     st.write("- Demande de documents")
+st.markdown('</div>', unsafe_allow_html=True)
+
+# =========================================================
+# AVATAR IA FLOTTANT
+# =========================================================
+st.markdown('<div class="avatar-box">', unsafe_allow_html=True)
+safe_display_image(AVATAR_GIF_PATH, width=90)
+st.markdown('<div class="avatar-label"><span class="pulse-dot"></span>KAREN en veille</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================================================
