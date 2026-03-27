@@ -1,5 +1,3 @@
-import re
-import unicodedata
 import streamlit as st
 
 st.set_page_config(
@@ -14,43 +12,40 @@ st.set_page_config(
 st.markdown("""
 <style>
 .block-container {
-    padding-top: 1.5rem;
-    padding-bottom: 2rem;
     max-width: 900px;
+    padding-top: 1.4rem;
+    padding-bottom: 2rem;
 }
 .hero {
     background: linear-gradient(135deg, #0f62fe 0%, #6ea8fe 100%);
     color: white;
     padding: 22px 24px;
     border-radius: 18px;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
 }
 .hero h1 {
     margin: 0;
-    font-size: 2.1rem;
-    line-height: 1.1;
+    font-size: 2rem;
 }
 .hero p {
-    margin: 8px 0 0 0;
+    margin: 6px 0 0 0;
     opacity: 0.95;
 }
-.card {
+.section-card {
     background: white;
     border: 1px solid #e9ecef;
     border-radius: 16px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.04);
 }
 .answer-card {
     background: #ffffff;
     border: 1px solid #dbeafe;
     border-left: 5px solid #0f62fe;
     border-radius: 16px;
-    padding: 16px 18px;
-    margin-top: 8px;
-    margin-bottom: 16px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    padding: 18px;
+    margin-top: 10px;
 }
 .topic-tag {
     display: inline-block;
@@ -66,432 +61,572 @@ st.markdown("""
     color: #6c757d;
     font-size: 0.92rem;
 }
-.suggestions {
-    background: #f8f9fa;
-    border-radius: 14px;
-    padding: 12px;
-    border: 1px dashed #d0d7de;
-}
-div[data-testid="stChatMessage"] {
-    padding-top: 0.2rem;
-    padding-bottom: 0.2rem;
-}
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
 <div class="hero">
   <h1>🤖 Agent Employé IA</h1>
-  <p>Assistant RH / Paie basé sur votre FAQ interne</p>
+  <p>Assistant RH / Paie guidé par parcours</p>
 </div>
 """, unsafe_allow_html=True)
 
 # =========================
-# FAQ STRUCTURÉE
+# ETAT SESSION
 # =========================
-FAQ = [
-    {
-        "topic": "Maladie",
-        "patterns": [
-            r"\bmaladie\b", r"\barret\b", r"\barr[eê]t\b", r"\bijss\b",
-            r"\bcarence\b", r"\bsubrogation\b", r"\bsalaire.*baisse\b",
-            r"\bbaisse.*salaire\b", r"\babsence.*maladie\b", r"\bsecurite sociale\b",
-            r"\bs[eé]curit[eé] sociale\b", r"\bmaintien de salaire\b"
-        ],
-        "examples": [
-            "Pourquoi mon salaire a baissé après un arrêt maladie ?",
-            "C’est quoi la subrogation ?",
-            "Est-ce qu’il y a 3 jours de carence ?"
-        ],
-        "answer": """En cas d’arrêt maladie, le salaire peut baisser car l’absence est déduite de la paie. La Sécurité sociale peut verser des indemnités journalières, généralement avec 3 jours de carence, sauf exceptions. Selon l’ancienneté, il peut aussi y avoir un maintien de salaire ou un complément de prévoyance.
+defaults = {
+    "step": 1,
+    "theme": None,
+    "subtheme": None,
+    "q1": None,
+    "q2": None,
+    "final_answer": None
+}
+for k, v in defaults.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
 
-En clair :
-- absence maladie = déduction sur la paie ;
-- IJSS = versement par la Sécurité sociale ;
-- carence = possible sur les premiers jours ;
-- maintien / complément = selon ancienneté et règles applicables.
+def reset_flow():
+    st.session_state["step"] = 1
+    st.session_state["theme"] = None
+    st.session_state["subtheme"] = None
+    st.session_state["q1"] = None
+    st.session_state["q2"] = None
+    st.session_state["final_answer"] = None
 
-Si vous voulez, je peux aussi vous répondre plus précisément sur :
-- la subrogation ;
-- les 3 jours de carence ;
-- ou le maintien de salaire."""
-    },
-    {
-        "topic": "Enfant malade",
-        "patterns": [
-            r"\benfant malade\b", r"\bconge enfant malade\b", r"\bcong[eé] enfant malade\b"
-        ],
-        "examples": [
-            "Combien de jours enfant malade ai-je ?",
-            "Les jours enfant malade sont-ils payés ?"
-        ],
-        "answer": """Les congés enfant malade sont calculés sur l’année civile, du 1er janvier au 31 décembre.
+# =========================
+# LOGIQUE REPONSES
+# =========================
+def build_answer(theme, subtheme, q1=None, q2=None):
+    topic = f"{theme} — {subtheme}"
+
+    # 1) PAIE / BULLETIN
+    if theme == "Ma paie / mon bulletin":
+        if subtheme == "Mon salaire a baissé":
+            if q1 == "Oui, après une absence maladie":
+                return topic, """Une baisse de salaire peut s’expliquer par une absence maladie.
+
+En pratique :
+- l’absence est déduite du salaire ;
+- la Sécurité sociale peut verser des indemnités journalières ;
+- il peut y avoir 3 jours de carence, sauf exceptions ;
+- selon votre ancienneté, un maintien de salaire ou un complément de prévoyance peut aussi s’appliquer.
+
+Donc, une différence temporaire entre votre paie habituelle et votre paie du mois peut être normale après un arrêt maladie."""
+            elif q1 == "Oui, après une autre absence":
+                return topic, """Une baisse de salaire peut être liée à une absence non travaillée ou à une absence qui n’est pas intégralement rémunérée.
+
+Le bon réflexe est de vérifier :
+- le type d’absence posé ;
+- la période concernée ;
+- et la présence éventuelle d’une retenue sur le bulletin.
+
+Si vous me décrivez l’absence, je peux vous aider à interpréter la situation."""
+            elif q1 == "Non, sans absence":
+                return topic, """Si votre salaire a baissé sans absence, les causes possibles sont souvent :
+- une prime absente ou différente ;
+- un acompte ;
+- une régularisation ;
+- une évolution de cotisations ;
+- ou un élément variable non encore remonté en paie.
+
+Je vous conseille de vérifier en priorité :
+- si une prime attendue manque ;
+- si vous avez demandé un acompte ;
+- ou si un élément a été saisi tardivement."""
+            else:
+                return topic, """Un salaire en baisse peut venir d’une absence, d’une régularisation, d’un acompte, d’une variation de prime ou d’un élément variable non encore traité. Il faut d’abord vérifier si un événement particulier a eu lieu sur la période."""
+
+        if subtheme == "Il manque des heures":
+            if q1 == "Oui, avant le 15":
+                if q2 == "Oui":
+                    return topic, """Si les heures ont été faites avant le 15 et validées, elles peuvent en principe être intégrées sur la paie du mois, sous réserve que le circuit manager → RH → paie ait bien été respecté.
+
+Si elles n’apparaissent toujours pas, il faut vérifier :
+- si la transmission RH a bien été faite ;
+- ou si un décalage exceptionnel a eu lieu."""
+                elif q2 == "Non":
+                    return topic, """Si le manager n’a pas encore validé les heures, elles ne peuvent pas être correctement transmises à la paie.
+
+Le bon réflexe est donc de vérifier d’abord la validation manager."""
+                else:
+                    return topic, """Si les heures ont été faites avant le 15, elles peuvent être traitées sur la paie du mois, mais seulement si le circuit de validation a bien été respecté."""
+            elif q1 == "Oui, après le 15":
+                return topic, """Si les heures ont été faites ou transmises après le 15, elles sont généralement payées sur la paie du mois suivant.
+
+Donc, si elles n’apparaissent pas encore sur le bulletin du mois en cours, ce n’est pas forcément un oubli : cela peut être un décalage normal vers M+1."""
+            else:
+                return topic, """Les heures supplémentaires ou complémentaires suivent un circuit de validation.
+
+En général :
+- si elles sont transmises avant le 15, elles peuvent être traitées sur la paie du mois ;
+- si elles sont transmises après le 15, elles passent en paie M+1.
+
+L’absence de ligne sur le bulletin ne signifie donc pas forcément un oubli."""
+        if subtheme == "Il manque une prime":
+            return topic, """Le service paie ne calcule pas lui-même les primes. Le montant est transmis par le service RH en lien avec le manager, puis appliqué tel qu’il est communiqué.
+
+Si vous pensez qu’il y a une erreur, la première vérification doit porter sur le montant validé côté RH / management."""
+        if subtheme == "Je pense qu’il y a une erreur":
+            return topic, """Si vous pensez qu’il y a une erreur sur votre bulletin, le plus utile est de préciser :
+- le mois concerné ;
+- la ligne concernée ;
+- et la différence constatée.
+
+Cela permettra de distinguer :
+- une vraie anomalie ;
+- un décalage de traitement ;
+- ou une régularisation normale."""
+        if subtheme == "Je ne comprends pas une ligne":
+            return topic, """Si vous ne comprenez pas une ligne de bulletin, le bon réflexe est d’identifier son type :
+- absence / retenue ;
+- prime ;
+- cotisation ;
+- acompte ;
+- allocation ou remboursement.
+
+Donnez le libellé exact de la ligne et le mois concerné, et vous pourrez obtenir une explication plus fiable."""
+
+    # 2) ABSENCE
+    if theme == "Absence / congé":
+        if subtheme == "Arrêt maladie":
+            if q1 == "Oui, je veux comprendre la baisse de paie":
+                return topic, """En cas d’arrêt maladie, la baisse de paie peut être normale :
+- l’absence est déduite ;
+- la Sécurité sociale peut verser des IJSS ;
+- 3 jours de carence peuvent s’appliquer, sauf exceptions ;
+- un maintien de salaire ou un complément de prévoyance peut exister selon l’ancienneté.
+
+Autrement dit, la paie employeur et les versements Sécurité sociale ne se superposent pas toujours de façon simple sur le même mois."""
+            elif q1 == "Oui, je veux comprendre la subrogation":
+                return topic, """La subrogation signifie que l’employeur continue de verser tout ou partie du salaire, et perçoit directement les indemnités journalières de la Sécurité sociale à votre place.
+
+Concrètement, cela évite que vous ayez à gérer vous-même certains flux pendant l’arrêt."""
+            else:
+                return topic, """Un arrêt maladie entraîne en principe :
+- une déduction d’absence ;
+- d’éventuelles IJSS ;
+- parfois 3 jours de carence ;
+- et, selon l’ancienneté, un maintien ou un complément de rémunération."""
+        if subtheme == "Enfant malade":
+            return topic, """Les congés enfant malade sont calculés sur l’année civile, du 1er janvier au 31 décembre.
 
 En résumé :
 - 3 jours par an pour un enfant de moins de 16 ans ;
 - 5 jours par an si l’enfant a moins d’1 an ou si vous avez 3 enfants de moins de 16 ans ;
 - moins de 12 mois d’ancienneté : jours non payés ;
-- plus de 12 mois d’ancienneté : jours payés.
+- plus de 12 mois d’ancienneté : jours payés."""
+        if subtheme == "Décès":
+            return topic, """En cas de décès, un justificatif est nécessaire et le livret de famille peut être demandé en plus de l’acte de décès pour prouver le lien de filiation.
 
-Si le compteur est épuisé, une journée supplémentaire peut exister sous conditions et avec justificatif."""
-    },
-    {
-        "topic": "Jour décès",
-        "patterns": [
-            r"\bd[eé]c[eè]s\b", r"\bacte de deces\b", r"\bacte de décès\b",
-            r"\blivret de famille\b", r"\bjour deces\b", r"\bconge deces\b", r"\bcong[eé] d[eé]c[eè]s\b"
-        ],
-        "examples": [
-            "Pourquoi faut-il le livret de famille en plus de l’acte de décès ?",
-            "Combien de jours ai-je en cas de décès ?"
-        ],
-        "answer": """En cas de décès, le livret de famille peut être demandé en plus de l’acte de décès pour prouver le lien de filiation. Le nombre de jours dépend du lien familial.
-
-Repères :
-- 7 jours : enfant ou personne à charge effective et permanente ;
-- 5 jours : père, mère, conjoint, concubin ou partenaire PACS ;
-- 3 jours : frère, sœur, beau-père ou belle-mère ;
-- 1 jour : autre ascendant que père ou mère.
-
-Ces jours sont à prendre dans un délai raisonnable, en principe dans le mois qui suit."""
-    },
-    {
-        "topic": "Mariage / PACS",
-        "patterns": [
-            r"\bmariage\b", r"\bpacs\b", r"\bpacser\b", r"\bconge mariage\b", r"\bcong[eé] mariage\b"
-        ],
-        "examples": [
-            "J’ai droit à combien de jours pour mon PACS ?",
-            "Quand puis-je prendre mon congé mariage ?"
-        ],
-        "answer": """Le mariage ou le PACS ouvre droit à une absence exceptionnelle, sans condition d’ancienneté.
+Le nombre de jours dépend du lien familial. Ces jours sont à prendre dans un délai raisonnable, en principe dans le mois qui suit."""
+        if subtheme == "Mariage / PACS":
+            return topic, """Le mariage ou le PACS ouvre droit à une absence exceptionnelle sans condition d’ancienneté.
 
 En pratique :
 - salarié : 6 jours ouvrés consécutifs ;
 - enfant du salarié : 1 jour ouvré.
 
-Le congé peut être pris le jour de l’événement ou dans un délai raisonnable avant ou après, en principe dans le mois qui suit."""
-    },
-    {
-        "topic": "Mutuelle",
-        "patterns": [
-            r"\bmutuelle\b", r"\bcompl[eé]mentaire sant[eé]\b", r"\bdispense\b", r"\baffiliation\b"
-        ],
-        "examples": [
-            "Je n’ai pas répondu au mail de mutuelle, que se passe-t-il ?",
-            "La mutuelle est-elle obligatoire ?"
-        ],
-        "answer": """La mutuelle d’entreprise est en principe obligatoire, sauf cas de dispense prévus.
+Le congé peut être pris le jour de l’événement ou dans un délai raisonnable avant ou après."""
+        if subtheme == "Jours de révision":
+            return topic, """Pour les jours de révision :
+- l’apprenti bénéficie de 5 jours ouvrés rémunérés supplémentaires dans le mois précédant les épreuves ;
+- le salarié non apprenti peut bénéficier, sous conditions, de 3 jours ouvrables rémunérés pour un examen universitaire ou professionnel."""
+        if subtheme == "Congés payés":
+            return topic, """En principe, vous acquérez 25 jours ouvrés de congés légaux par an, auxquels peuvent s’ajouter 5 jours ouvrés mobiles conventionnels.
 
-Fonctionnement :
-- à l’embauche, vous êtes inscrit par défaut ;
-- environ 15 à 20 jours après votre arrivée, vous recevez un mail pour compléter votre affiliation ;
-- vous avez 2 mois pour finaliser l’affiliation ;
-- vous pouvez ensuite demander une dispense ou souscrire à des options complémentaires.
+C’est ce qui explique que le bulletin puisse afficher 30 jours."""
+        if subtheme == "Période de gel":
+            return topic, """La période de gel correspond à la période pendant laquelle les demandes continuent d’être saisies, mais ne remontent plus immédiatement dans la paie.
 
-Si la mutuelle transmet tardivement une information, une régularisation peut être faite sur la paie."""
-    },
-    {
-        "topic": "Acompte",
-        "patterns": [
-            r"\bacompte\b", r"\bavance sur salaire\b", r"\bavance\b"
-        ],
-        "examples": [
-            "Puis-je demander un acompte ?",
-            "Y a-t-il des avances sur salaire ?"
-        ],
-        "answer": """Aucune avance sur salaire n’est accordée.
+Elle a lieu chaque mois entre le 20 et le 7 du mois suivant. Les demandes faites sur cette période sont prises en compte sur la période suivante."""
 
-En revanche, un acompte peut être demandé si vous avez déjà effectué les heures correspondant au montant demandé. La demande se fait via Mon Portail Paie."""
-    },
-    {
-        "topic": "Heures supplémentaires / complémentaires",
-        "patterns": [
-            r"\bheures\b", r"\bheures supplementaires\b", r"\bheures supplémentaires\b",
-            r"\bheures complementaires\b", r"\bheures complémentaires\b",
-            r"\breleve d heures\b", r"\brelev[eé] d'?heures\b"
-        ],
-        "examples": [
-            "Pourquoi mes heures ne sont pas sur ma paie ?",
-            "J’ai envoyé mon relevé d’heures, pourquoi je ne vois rien ?"
-        ],
-        "answer": """Si vos heures en plus n’apparaissent pas encore sur votre bulletin, cela peut être normal.
+    # 3) MUTUELLE
+    if theme == "Mutuelle":
+        if subtheme == "La mutuelle est-elle obligatoire ?":
+            return topic, """La mutuelle d’entreprise est en principe obligatoire, sauf cas de dispense prévus.
 
-Circuit habituel :
-- le salarié effectue les heures ;
-- le manager les transmet au service RH ;
-- le service RH les transmet à la paie ;
-- si la transmission est faite avant le 15, elles peuvent être traitées sur la paie du mois ;
-- si elle est faite après le 15, elles passent en paie M+1.
+À l’embauche, l’affiliation est généralement faite par défaut, puis un mail permet de compléter le dossier."""
+        if subtheme == "Je n’ai pas répondu au mail":
+            return topic, """Vous avez en principe 2 mois pour finaliser votre affiliation. Passé ce délai, il faut vous rapprocher de votre chargé RH pour obtenir un nouveau lien d’affiliation."""
+        if subtheme == "Je veux une dispense":
+            return topic, """Une dispense de mutuelle peut être possible selon votre situation. La demande doit être faite avec les justificatifs attendus.
 
-Donc, l’absence de ligne sur le bulletin ne signifie pas forcément un oubli."""
-    },
-    {
-        "topic": "Primes",
-        "patterns": [
-            r"\bprime\b", r"\bprimes\b", r"\bprime objectif\b", r"\bobjectif\b"
-        ],
-        "examples": [
-            "Pourquoi ma prime n’est pas du bon montant ?",
-            "La paie calcule-t-elle les primes ?"
-        ],
-        "answer": """Le service paie ne calcule pas les primes. Le montant est transmis par le service RH, en lien avec le manager, puis appliqué tel qu’il est communiqué.
+Si la demande de dispense est acceptée, elle peut devoir être renouvelée selon le type et la durée du contrat."""
+        if subtheme == "Je vois une cotisation mutuelle":
+            return topic, """La présence d’une cotisation mutuelle sur le bulletin est normale si vous êtes affilié à la mutuelle d’entreprise et qu’aucune dispense valide n’a été enregistrée.
 
-Si vous pensez qu’il y a une erreur, la première vérification doit se faire sur le montant validé côté RH / management."""
-    },
-    {
-        "topic": "Télétravail",
-        "patterns": [
-            r"\bt[eé]l[eé]travail\b", r"\ballocation t[eé]l[eé]travail\b",
-            r"\b20 euros\b", r"\b20€\b", r"\bavenant\b", r"\bassurance habitation\b"
-        ],
-        "examples": [
-            "Pourquoi je n’ai pas la ligne télétravail ?",
-            "Quels documents faut-il pour l’allocation télétravail ?"
-        ],
-        "answer": """Pour bénéficier de l’allocation forfaitaire télétravail, le dossier doit être complet.
-
-Il faut :
-- un avenant télétravail signé ;
-- une attestation d’assurance habitation en cours de validité ;
-- l’assurance doit être transmise chaque année.
-
-Une fois les éléments transmis par les RH à la paie, l’allocation peut être mise en place."""
-    },
-    {
-        "topic": "Tickets restaurant",
-        "patterns": [
-            r"\bticket restaurant\b", r"\btickets restaurant\b", r"\btr\b", r"\bedenred\b", r"\bcarte tr\b"
-        ],
-        "examples": [
-            "Combien de tickets restaurant ai-je ?",
-            "Pourquoi je n’ai pas reçu ma carte Edenred ?"
-        ],
-        "answer": """Pour les tickets restaurant :
-- vous avez droit à 1 ticket restaurant par journée travaillée ;
-- la journée doit être d’au moins 6 heures ;
-- elle doit inclure une pause d’au moins 30 minutes entre 12h00 et 14h00 ;
-- la déclaration doit être faite via Mon Portail Paie avant le 20 du mois.
-
-Si la carte n’a pas été reçue, il peut être nécessaire de contacter directement Edenred."""
-    },
-    {
-        "topic": "Transport / Navigo",
-        "patterns": [
-            r"\btransport\b", r"\bnavigo\b", r"\bratp\b", r"\bremboursement transport\b", r"\bpass navigo\b"
-        ],
-        "examples": [
-            "Comment demander le remboursement transport ?",
-            "Quels justificatifs faut-il pour le Navigo ?"
-        ],
-        "answer": """Le remboursement des frais de transport à hauteur de 50 % se demande sur Mon Portail Paie.
+En cas de transmission tardive d’une dispense, une régularisation peut intervenir, mais elle reste encadrée."""
+    
+    # 4) TRANSPORT
+    if theme == "Transport":
+        if subtheme == "Remboursement Navigo":
+            return topic, """Le remboursement des frais de transport à hauteur de 50 % se demande sur Mon Portail Paie.
 
 La demande doit comporter, en un seul fichier :
 - une attestation sur l’honneur signée ;
 - un justificatif de paiement ;
+- une copie du pass Navigo."""
+        if subtheme == "Quels justificatifs fournir ?":
+            return topic, """Les 3 justificatifs attendus sont :
+- une attestation sur l’honneur signée ;
+- un justificatif de paiement ;
 - une copie du pass Navigo.
 
-Seuls les abonnements hebdomadaires, mensuels et annuels sont pris en charge. Le Navigo Liberté+ et les tickets à l’unité ne sont pas remboursés."""
-    },
-    {
-        "topic": "Période de gel",
-        "patterns": [
-            r"\bgel\b", r"\bp[eé]riode de gel\b", r"\b20 au 7\b", r"\bremonte\b", r"\bremont[eé]e\b"
-        ],
-        "examples": [
-            "C’est quoi la période de gel ?",
-            "Pourquoi ma demande ne remonte pas sur la paie ?"
-        ],
-        "answer": """La période de gel signifie qu’il n’y a plus d’échange entre le portail paie et le logiciel de paie.
+Ils doivent être regroupés dans un seul fichier pour la demande."""
+        if subtheme == "Ce qui n’est pas remboursé":
+            return topic, """Ne sont pas pris en charge :
+- le pass Navigo Liberté+ ;
+- les tickets à l’unité ;
+- les carnets.
 
-Elle a lieu chaque mois entre le 20 et le 7 du mois suivant.
+Seuls les abonnements hebdomadaires, mensuels et annuels sont remboursés."""
+    
+    # 5) TICKETS RESTAURANT
+    if theme == "Tickets restaurant":
+        if subtheme == "Combien ai-je de tickets ?":
+            return topic, """Vous avez droit à 1 ticket restaurant par journée travaillée, à condition que la journée corresponde à une amplitude minimale de 6 heures avec une pause d’au moins 30 minutes entre 12h00 et 14h00."""
+        if subtheme == "Comment les déclarer ?":
+            return topic, """La déclaration se fait sur Mon Portail Paie, via Mes demandes puis Mes éléments variables, avant le 20 de chaque mois."""
+        if subtheme == "Je n’ai pas reçu ma carte":
+            return topic, """Si la carte ticket restaurant n’a pas été reçue, il peut être nécessaire de contacter directement Edenred pour le suivi de la livraison, car certaines informations restent traitées directement avec eux."""
+    
+    # 6) TELETRAVAIL
+    if theme == "Télétravail":
+        if subtheme == "Pourquoi je n’ai pas la ligne ?":
+            return topic, """Si la ligne d’allocation télétravail n’apparaît pas, c’est souvent qu’un document manque ou n’a pas encore été transmis à la paie.
 
-Pendant cette période :
-- vous pouvez continuer à faire vos demandes ;
-- elles ne remontent pas immédiatement en paie ;
-- elles sont prises en compte sur la période suivante."""
-    },
-    {
-        "topic": "Arkevia - activation",
-        "patterns": [
-            r"\barkevia\b", r"\bcoffre fort\b", r"\bcoffre-fort\b", r"\bactivation\b", r"\bactiver\b"
-        ],
-        "examples": [
-            "Comment activer Arkevia ?",
-            "Comment accéder à mon coffre-fort ?"
-        ],
-        "answer": """Pour activer votre coffre-fort Arkevia :
-1. Accédez à Arkevia via OneLogin ou myarkevia.com ;
+Les éléments attendus sont en général :
+- un avenant signé ;
+- une attestation d’assurance habitation en cours de validité."""
+        if subtheme == "Quels documents faut-il ?":
+            return topic, """Pour bénéficier de l’allocation télétravail, il faut :
+- un avenant télétravail signé ;
+- une attestation d’assurance habitation valide.
+
+L’assurance doit être fournie chaque année."""
+    
+    # 7) ARKEVIA
+    if theme == "Arkevia / bulletins":
+        if subtheme == "Activer mon coffre-fort":
+            return topic, """Pour activer Arkevia :
+1. accédez au coffre-fort via OneLogin ou myarkevia.com ;
 2. cliquez sur “Je m’inscris” ;
-3. renseignez votre matricule et votre code secret reçus par mail ;
+3. renseignez votre matricule et votre code secret ;
 4. renseignez votre nom, prénom et votre adresse email personnelle ;
 5. choisissez votre mot de passe et validez.
 
 L’adresse email personnelle est importante car elle permet de conserver l’accès pendant 50 ans."""
-    },
-    {
-        "topic": "Arkevia - connexion",
-        "patterns": [
-            r"\bmot de passe oubli[eé]\b", r"\bconnexion arkevia\b", r"\bse connecter arkevia\b"
-        ],
-        "examples": [
-            "J’ai oublié mon mot de passe Arkevia",
-            "Comment me connecter à Arkevia ?"
-        ],
-        "answer": """Pour vous connecter à Arkevia :
+        if subtheme == "Me connecter":
+            return topic, """Pour vous connecter à Arkevia :
 - utilisez votre adresse email personnelle renseignée lors de l’activation ;
-- puis le mot de passe choisi lors de l’inscription.
+- puis votre mot de passe choisi lors de l’inscription.
 
-Si vous avez oublié votre mot de passe, utilisez le lien “Mot de passe oublié ?”. Un email de réinitialisation sera envoyé sur votre adresse personnelle."""
-    },
-    {
-        "topic": "Portail paie",
-        "patterns": [
-            r"\bportail paie\b", r"\bmon portail paie\b", r"\bone login\b", r"\bonelogin\b"
-        ],
-        "examples": [
-            "Comment faire une demande sur Mon Portail Paie ?",
-            "Je ne vois pas la tuile Mon Portail Paie"
-        ],
-        "answer": """Mon Portail Paie sert à effectuer plusieurs démarches RH / paie, comme les demandes d’acompte, certaines absences, le transport ou les titres restaurant selon les cas.
+En cas d’oubli, utilisez “Mot de passe oublié ?”."""
+        if subtheme == "Importer mes anciens bulletins":
+            return topic, """Vous pouvez télécharger vos anciens bulletins depuis PeopleDoc puis les déposer dans Arkevia via “Déposer un document”. Vous pouvez aussi créer des dossiers pour mieux les classer."""
+    
+    # 8) PORTAIL PAIE
+    if theme == "Mon Portail Paie":
+        if subtheme == "Période de gel":
+            return topic, """La période de gel correspond à l’absence d’échange entre le portail et le logiciel de paie.
 
-Si vous n’avez pas accès à la tuile, il faut généralement vous rapprocher de votre manager et du support informatique."""
-    },
-]
+Elle a lieu chaque mois entre le 20 et le 7 du mois suivant. Les demandes peuvent continuer à être saisies, mais elles ne remontent pas immédiatement en paie."""
+        if subtheme == "Acompte via portail":
+            return topic, """Les demandes d’acompte doivent être effectuées via Mon Portail Paie. Les modalités et limites apparaissent directement sur le portail."""
+        if subtheme == "Prise de contrôle / aide":
+            return topic, """Le gestionnaire paie peut prendre le contrôle du portail d’un salarié de son périmètre afin de l’accompagner sur ses démarches si nécessaire."""
+        if subtheme == "Demande non remontée":
+            return topic, """Une demande peut ne pas remonter pour plusieurs raisons :
+- période de gel ;
+- validation incomplète ;
+- délai de traitement normal ;
+- ou demande saisie hors fenêtre attendue selon le type d’élément."""
 
-FALLBACK_QUESTIONS = [
-    "Pourquoi mon salaire a baissé après une absence maladie ?",
-    "Comment demander un acompte ?",
-    "Pourquoi mes heures ne sont pas sur ma paie ?",
-    "Comment activer Arkevia ?",
-    "Quels justificatifs faut-il pour le remboursement transport ?",
-    "Pourquoi ma demande ne remonte pas sur la paie ?",
-]
+    return topic, """Je n’ai pas trouvé de réponse assez précise avec ce parcours. Reformulez le besoin ou revenez au menu principal."""
 
 # =========================
-# OUTILS
+# BOUTON RESET
 # =========================
-def normalize(text: str) -> str:
-    text = text.lower().strip()
-    text = unicodedata.normalize("NFD", text)
-    text = "".join(ch for ch in text if unicodedata.category(ch) != "Mn")
-    text = re.sub(r"[^a-z0-9\s]", " ", text)
-    text = re.sub(r"\s+", " ", text)
-    return text
+col_reset_1, col_reset_2 = st.columns([5, 1])
+with col_reset_2:
+    if st.button("↺ Recommencer"):
+        reset_flow()
+        st.rerun()
 
-def strong_bonus(q: str, patt: str) -> int:
-    try:
-        if re.search(patt, q):
-            return 8
-    except re.error:
-        pass
-    return 0
+# =========================
+# ETAPE 1 : THEME
+# =========================
+if st.session_state["step"] == 1:
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.subheader("1. Votre demande concerne quoi ?")
 
-def word_overlap_score(q: str, topic: str, examples: list[str]) -> int:
-    q_words = set(normalize(q).split())
-    topic_words = set(normalize(topic).split())
-    score = len(q_words.intersection(topic_words))
+    theme = st.radio(
+        "Choisissez le thème principal",
+        [
+            "Ma paie / mon bulletin",
+            "Absence / congé",
+            "Mutuelle",
+            "Transport",
+            "Tickets restaurant",
+            "Télétravail",
+            "Arkevia / bulletins",
+            "Mon Portail Paie",
+        ],
+        index=None
+    )
 
-    for ex in examples:
-        ex_words = set(normalize(ex).split())
-        score += len(q_words.intersection(ex_words)) // 2
+    if st.button("Continuer", type="primary", use_container_width=True):
+        if theme:
+            st.session_state["theme"] = theme
+            st.session_state["step"] = 2
+            st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    return score
+# =========================
+# ETAPE 2 : SOUS-THEME
+# =========================
+elif st.session_state["step"] == 2:
+    theme = st.session_state["theme"]
 
-def classify_question(question: str):
-    q = normalize(question)
-    scored = []
-
-    for item in FAQ:
-        score = 0
-        for patt in item["patterns"]:
-            score += strong_bonus(q, normalize(patt))
-        score += word_overlap_score(q, item["topic"], item["examples"])
-        scored.append((score, item))
-
-    scored.sort(key=lambda x: x[0], reverse=True)
-    best_score, best_item = scored[0]
-    return best_score, best_item, scored[:3]
-
-def build_response(question: str):
-    score, best, top3 = classify_question(question)
-
-    if score < 4:
-        return {
-            "found": False,
-            "topic": "Question non reconnue clairement",
-            "answer": "Je n’ai pas trouvé de réponse suffisamment fiable dans la FAQ. Reformulez votre question avec des mots plus précis, par exemple : maladie, mutuelle, acompte, heures, transport, Arkevia, télétravail.",
-            "suggestions": FALLBACK_QUESTIONS
-        }
-
-    suggestions = []
-    for _, item in top3[1:]:
-        if item["examples"]:
-            suggestions.append(item["examples"][0])
-
-    return {
-        "found": True,
-        "topic": best["topic"],
-        "answer": best["answer"],
-        "suggestions": suggestions[:2]
+    mapping = {
+        "Ma paie / mon bulletin": [
+            "Mon salaire a baissé",
+            "Il manque des heures",
+            "Il manque une prime",
+            "Je pense qu’il y a une erreur",
+            "Je ne comprends pas une ligne",
+        ],
+        "Absence / congé": [
+            "Arrêt maladie",
+            "Enfant malade",
+            "Décès",
+            "Mariage / PACS",
+            "Jours de révision",
+            "Congés payés",
+            "Période de gel",
+        ],
+        "Mutuelle": [
+            "La mutuelle est-elle obligatoire ?",
+            "Je n’ai pas répondu au mail",
+            "Je veux une dispense",
+            "Je vois une cotisation mutuelle",
+        ],
+        "Transport": [
+            "Remboursement Navigo",
+            "Quels justificatifs fournir ?",
+            "Ce qui n’est pas remboursé",
+        ],
+        "Tickets restaurant": [
+            "Combien ai-je de tickets ?",
+            "Comment les déclarer ?",
+            "Je n’ai pas reçu ma carte",
+        ],
+        "Télétravail": [
+            "Pourquoi je n’ai pas la ligne ?",
+            "Quels documents faut-il ?",
+        ],
+        "Arkevia / bulletins": [
+            "Activer mon coffre-fort",
+            "Me connecter",
+            "Importer mes anciens bulletins",
+        ],
+        "Mon Portail Paie": [
+            "Période de gel",
+            "Acompte via portail",
+            "Prise de contrôle / aide",
+            "Demande non remontée",
+        ]
     }
 
-# =========================
-# BARRE DE RACCOURCIS
-# =========================
-st.markdown('<div class="card"><div class="small-muted">Raccourcis</div></div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.subheader("2. Quel est votre besoin précis ?")
+    st.caption(f"Thème choisi : {theme}")
 
-c1, c2, c3, c4 = st.columns(4)
-with c1:
-    if st.button("💸 Salaire en baisse", use_container_width=True):
-        st.session_state["pending_input"] = "Pourquoi mon salaire a baissé après une absence maladie ?"
-with c2:
-    if st.button("📁 Arkevia", use_container_width=True):
-        st.session_state["pending_input"] = "Comment activer Arkevia ?"
-with c3:
-    if st.button("⏱️ Heures", use_container_width=True):
-        st.session_state["pending_input"] = "Pourquoi mes heures ne sont pas sur ma paie ?"
-with c4:
-    if st.button("🚆 Transport", use_container_width=True):
-        st.session_state["pending_input"] = "Quels justificatifs faut-il pour le remboursement Navigo ?"
+    subtheme = st.radio(
+        "Choisissez le sujet",
+        mapping[theme],
+        index=None
+    )
 
-# =========================
-# ÉTAT
-# =========================
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Retour", use_container_width=True):
+            st.session_state["step"] = 1
+            st.rerun()
+    with col2:
+        if st.button("Continuer", type="primary", use_container_width=True):
+            if subtheme:
+                st.session_state["subtheme"] = subtheme
 
-# =========================
-# AFFICHAGE HISTORIQUE
-# =========================
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        if msg["role"] == "assistant" and isinstance(msg["content"], dict):
-            data = msg["content"]
-            st.markdown(f'<div class="topic-tag">{data["topic"]}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="answer-card">{data["answer"]}</div>', unsafe_allow_html=True)
-            if data.get("suggestions"):
-                st.markdown('<div class="suggestions"><b>Questions proches :</b></div>', unsafe_allow_html=True)
-                for s in data["suggestions"]:
-                    st.write(f"• {s}")
-        else:
-            st.write(msg["content"])
+                if theme == "Ma paie / mon bulletin" and subtheme == "Mon salaire a baissé":
+                    st.session_state["step"] = 3
+                elif theme == "Ma paie / mon bulletin" and subtheme == "Il manque des heures":
+                    st.session_state["step"] = 4
+                elif theme == "Absence / congé" and subtheme == "Arrêt maladie":
+                    st.session_state["step"] = 5
+                else:
+                    topic, answer = build_answer(theme, subtheme)
+                    st.session_state["final_answer"] = {"topic": topic, "answer": answer}
+                    st.session_state["step"] = 99
+                st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================
-# INPUT
+# ETAPE 3 : QCM salaire en baisse
 # =========================
-user_input = st.chat_input("Posez votre question RH / paie...")
+elif st.session_state["step"] == 3:
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.subheader("3. Pour mieux répondre")
+    q1 = st.radio(
+        "La baisse de salaire fait-elle suite à une absence ?",
+        [
+            "Oui, après une absence maladie",
+            "Oui, après une autre absence",
+            "Non, sans absence",
+        ],
+        index=None
+    )
 
-if "pending_input" in st.session_state:
-    user_input = st.session_state["pending_input"]
-    del st.session_state["pending_input"]
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Retour", use_container_width=True):
+            st.session_state["step"] = 2
+            st.rerun()
+    with col2:
+        if st.button("Voir la réponse", type="primary", use_container_width=True):
+            if q1:
+                st.session_state["q1"] = q1
+                topic, answer = build_answer(
+                    st.session_state["theme"],
+                    st.session_state["subtheme"],
+                    q1=q1
+                )
+                st.session_state["final_answer"] = {"topic": topic, "answer": answer}
+                st.session_state["step"] = 99
+                st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-if user_input:
-    st.session_state.messages.append({"role": "user", "content": user_input})
+# =========================
+# ETAPE 4 : QCM heures
+# =========================
+elif st.session_state["step"] == 4:
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.subheader("3. Pour mieux répondre")
 
-    result = build_response(user_input)
+    q1 = st.radio(
+        "Quand les heures ont-elles été faites ou transmises ?",
+        [
+            "Oui, avant le 15",
+            "Oui, après le 15",
+            "Je ne sais pas",
+        ],
+        index=None
+    )
 
-    st.session_state.messages.append({"role": "assistant", "content": result})
+    q2 = None
+    if q1 == "Oui, avant le 15":
+        q2 = st.radio(
+            "Le manager les a-t-il validées ?",
+            ["Oui", "Non", "Je ne sais pas"],
+            index=None
+        )
 
-    st.rerun()
-    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Retour", use_container_width=True):
+            st.session_state["step"] = 2
+            st.rerun()
+    with col2:
+        if st.button("Voir la réponse", type="primary", use_container_width=True):
+            if q1:
+                st.session_state["q1"] = q1
+                st.session_state["q2"] = q2
+                topic, answer = build_answer(
+                    st.session_state["theme"],
+                    st.session_state["subtheme"],
+                    q1=q1,
+                    q2=q2
+                )
+                st.session_state["final_answer"] = {"topic": topic, "answer": answer}
+                st.session_state["step"] = 99
+                st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# =========================
+# ETAPE 5 : QCM arrêt maladie
+# =========================
+elif st.session_state["step"] == 5:
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.subheader("3. Pour mieux répondre")
+
+    q1 = st.radio(
+        "Que souhaitez-vous comprendre ?",
+        [
+            "Oui, je veux comprendre la baisse de paie",
+            "Oui, je veux comprendre la subrogation",
+            "Je veux une explication générale",
+        ],
+        index=None
+    )
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Retour", use_container_width=True):
+            st.session_state["step"] = 2
+            st.rerun()
+    with col2:
+        if st.button("Voir la réponse", type="primary", use_container_width=True):
+            if q1:
+                st.session_state["q1"] = q1
+                topic, answer = build_answer(
+                    st.session_state["theme"],
+                    st.session_state["subtheme"],
+                    q1=q1
+                )
+                st.session_state["final_answer"] = {"topic": topic, "answer": answer}
+                st.session_state["step"] = 99
+                st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# =========================
+# ETAPE FINALE
+# =========================
+elif st.session_state["step"] == 99:
+    data = st.session_state["final_answer"]
+
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.subheader("Réponse")
+    st.markdown(f'<div class="topic-tag">{data["topic"]}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="answer-card">{data["answer"]}</div>', unsafe_allow_html=True)
+
+    st.markdown("**Vous pouvez maintenant :**")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Poser une autre question", use_container_width=True):
+            reset_flow()
+            st.rerun()
+    with col2:
+        if st.button("Revenir à l’étape précédente", use_container_width=True):
+            theme = st.session_state["theme"]
+            subtheme = st.session_state["subtheme"]
+
+            if theme == "Ma paie / mon bulletin" and subtheme == "Mon salaire a baissé":
+                st.session_state["step"] = 3
+            elif theme == "Ma paie / mon bulletin" and subtheme == "Il manque des heures":
+                st.session_state["step"] = 4
+            elif theme == "Absence / congé" and subtheme == "Arrêt maladie":
+                st.session_state["step"] = 5
+            else:
+                st.session_state["step"] = 2
+            st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# =========================
+# BAS DE PAGE
+# =========================
+st.markdown(
+    '<p class="small-muted">Astuce : ce parcours est volontairement guidé pour éviter les réponses à côté et mieux orienter la problématique.</p>',
+    unsafe_allow_html=True
+)
