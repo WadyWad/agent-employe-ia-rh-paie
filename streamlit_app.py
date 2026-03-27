@@ -1,11 +1,15 @@
 import streamlit as st
 from openai import OpenAI
 
+# Config page
 st.set_page_config(page_title="Agent Employé IA", page_icon="🤖")
 
+# Connexion OpenAI
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
+# UI
 st.title("🤖 Agent Employé IA – Assistant RH / Paie")
+
 st.info(
     "Exemples : 'Pourquoi mon salaire a baissé ?' • "
     "'Je veux une attestation employeur' • "
@@ -29,45 +33,24 @@ with col3:
     if st.button("⚠️ Signaler une anomalie"):
         st.session_state["pending_input"] = "Je pense qu’il y a une erreur sur mon bulletin"
 
-SYSTEM_PROMPT = """
-Tu es un assistant RH / paie destiné aux employés.
-
-Règles :
-- Réponds en français.
-- Sois clair, simple, professionnel et rassurant.
-- Vulgarise les termes paie.
-- N’invente jamais d’informations internes.
-- Si une information manque, dis-le clairement.
-- Propose toujours une prochaine étape utile.
-- Si la demande concerne une anomalie, demande :
-  1. le mois concerné
-  2. la ligne concernée
-  3. la différence constatée
-- Si la demande concerne une attestation, demande le type exact.
-- Si la demande concerne une variation de paie, évoque seulement les causes probables :
-  absence, prime, régularisation, acompte, cotisations.
-"""
-
+# Mémoire conversation
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Affichage historique
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
 
+# Input utilisateur
 user_input = st.chat_input("Posez votre question RH / paie...")
 
+# Gestion boutons
 if "pending_input" in st.session_state:
     user_input = st.session_state["pending_input"]
     del st.session_state["pending_input"]
 
-def build_messages(history, latest_user_message):
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    for m in history:
-        messages.append({"role": m["role"], "content": m["content"]})
-    messages.append({"role": "user", "content": latest_user_message})
-    return messages
-
+# IA
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
 
@@ -76,17 +59,34 @@ if user_input:
 
     with st.chat_message("assistant"):
         with st.spinner("Analyse en cours..."):
+
             try:
-                response = client.chat.completions.create(
+                response = client.responses.create(
                     model="gpt-4o-mini",
-                    messages=build_messages(st.session_state.messages[:-1], user_input),
+                    input=[
+                        {
+                            "role": "system",
+                            "content": """Tu es un assistant RH / paie expert.
+
+Tu dois :
+- répondre en français
+- être clair et simple
+- vulgariser les termes paie
+- proposer des actions concrètes
+- ne jamais inventer
+- demander des précisions si nécessaire"""
+                        },
+                        {
+                            "role": "user",
+                            "content": user_input
+                        }
+                    ]
                 )
-                answer = response.choices[0].message.content
+
+                answer = response.output[0].content[0].text
+
             except Exception as e:
-                answer = (
-                    "Je n’ai pas pu contacter le moteur IA pour le moment. "
-                    f"Erreur : {e}"
-                )
+                answer = f"Erreur IA : {e}"
 
             st.write(answer)
 
