@@ -842,13 +842,19 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
     thinking_placeholder.empty()
 
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Conversation avec KAREN</div>', unsafe_allow_html=True)
+
+    user_extra = ""
+    if st.session_state.free_text:
+        user_extra = f"<br><br>Complément transmis : {st.session_state.free_text}"
+
     st.markdown(
         f"""<div class="chat-user">
             <div class="chat-label-user">VOUS</div>
             Bonjour KAREN, je suis <strong>{st.session_state.role}</strong> de l'entité <strong>{st.session_state.entity}</strong>.
             Mon profil est <strong>{st.session_state.job_type}</strong>, en <strong>{st.session_state.contract_type}</strong>, à <strong>{st.session_state.work_time}</strong>.
             Mon sujet concerne <strong>{st.session_state.theme}</strong> et plus précisément : <strong>{st.session_state.need}</strong>.
-            {f'<br><br>Complément transmis : {st.session_state.free_text}' if st.session_state.free_text else ''}
+            {user_extra}
         </div>""",
         unsafe_allow_html=True,
     )
@@ -860,6 +866,9 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
         </div>""",
         unsafe_allow_html=True,
     )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="karen-card">', unsafe_allow_html=True)
     st.markdown("#### Vérifications recommandées")
     for item in result["checks"]:
         st.write(f"- {item}")
