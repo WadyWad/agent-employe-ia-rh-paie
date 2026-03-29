@@ -247,6 +247,290 @@ THEMES = {
 }
 
 # =========================================================
+# QUESTIONS DYNAMIQUES
+# =========================================================
+DYNAMIC_QUESTIONS = {
+    ("Ma paie / Mon bulletin", "Mon salaire a baissé / augmenté"): [
+        {
+            "id": "pay_absence",
+            "label": "Avez-vous eu une absence sur la période concernée ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "pay_variables",
+            "label": "Aviez-vous des éléments variables attendus ce mois-ci ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "pay_before_15",
+            "label": "Ces éléments ont-ils été transmis ou validés avant le 15 ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+            "show_if": lambda a: a.get("pay_variables") == "Oui",
+        },
+        {
+            "id": "pay_acompte",
+            "label": "Avez-vous demandé un acompte ce mois-ci ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "pay_prime",
+            "label": "Attendiez-vous une prime ou une indemnité habituelle ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+    ],
+    ("Ma paie / Mon bulletin", "Il manque des heures (FFP / induites / supplémentaires)"): [
+        {
+            "id": "hours_type",
+            "label": "Quel type d'heures est concerné ?",
+            "type": "radio",
+            "options": ["FFP", "Heures induites", "Heures supplémentaires", "Autre / Je ne sais pas"],
+        },
+        {
+            "id": "hours_sent",
+            "label": "Les heures ont-elles bien été saisies ou transmises ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "hours_validated",
+            "label": "Les heures ont-elles été validées par le manager / responsable ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "hours_before_15",
+            "label": "La transmission ou la validation a-t-elle eu lieu avant le 15 ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+            "show_if": lambda a: a.get("hours_sent") == "Oui" or a.get("hours_validated") == "Oui",
+        },
+    ],
+    ("Heures / Activité", "Mes heures FFP ne sont pas correctes"): [
+        {
+            "id": "ffp_validated",
+            "label": "Les heures FFP ont-elles été validées ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "ffp_before_15",
+            "label": "La validation ou la transmission a-t-elle eu lieu avant le 15 ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "ffp_same_month",
+            "label": "Le problème concerne-t-il uniquement le mois en cours ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+    ],
+    ("Heures / Activité", "Heures validées mais non payées"): [
+        {
+            "id": "validated_date",
+            "label": "La validation a-t-elle eu lieu avant le 15 ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "bulletin_edited",
+            "label": "Le bulletin du mois concerné est-il déjà disponible ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+    ],
+    ("Heures / Activité", "Problème de transmission des heures"): [
+        {
+            "id": "transmission_done",
+            "label": "Les heures ont-elles été transmises dans l'outil ou au bon interlocuteur ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "transmission_block",
+            "label": "À quelle étape le blocage semble-t-il se situer ?",
+            "type": "radio",
+            "options": ["Saisie", "Validation", "Remontée paie", "Je ne sais pas"],
+        },
+    ],
+    ("Absences / Arrêts", "Je veux signaler un arrêt de travail"): [
+        {
+            "id": "stop_medical",
+            "label": "S’agit-il bien d’un arrêt de travail médical ?",
+            "type": "radio",
+            "options": ["Oui", "Non"],
+        },
+        {
+            "id": "stop_sent_rh",
+            "label": "Avez-vous déjà transmis l’arrêt au RH de proximité ?",
+            "type": "radio",
+            "options": ["Oui", "Non"],
+        },
+        {
+            "id": "stop_urgent",
+            "label": "L’arrêt commence-t-il aujourd’hui ou est-il déjà en cours ?",
+            "type": "radio",
+            "options": ["Oui", "Non"],
+        },
+    ],
+    ("Absences / Arrêts", "Je veux comprendre l’impact sur ma paie"): [
+        {
+            "id": "impact_abs_type",
+            "label": "Le sujet concerne-t-il un arrêt maladie ou une autre absence ?",
+            "type": "radio",
+            "options": ["Arrêt maladie", "Autre absence", "Je ne sais pas"],
+        },
+        {
+            "id": "impact_sent_rh",
+            "label": "L’arrêt ou l’information a-t-il été transmis au RH ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "impact_bulletin_done",
+            "label": "Le bulletin du mois concerné est-il déjà édité ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+    ],
+    ("Télétravail", "Mon manager refuse"): [
+        {
+            "id": "tt_portal",
+            "label": "La demande de télétravail a-t-elle bien été faite via le portail ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "tt_manager_refusal",
+            "label": "Le refus vient-il explicitement du manager ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "tt_goal",
+            "label": "Souhaitez-vous surtout comprendre la règle ou demander un réexamen ?",
+            "type": "radio",
+            "options": ["Comprendre la règle", "Demander un réexamen"],
+        },
+    ],
+    ("Acompte sur salaire", "Comment demander un acompte"): [
+        {
+            "id": "advance_period",
+            "label": "Êtes-vous entre le 1er jour du mois et le 11 à minuit ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "advance_portal",
+            "label": "Allez-vous faire la demande via Mon Portail Paie ?",
+            "type": "radio",
+            "options": ["Oui", "Non"],
+        },
+        {
+            "id": "advance_limit",
+            "label": "Le montant demandé reste-t-il inférieur ou égal à 50 % du salaire ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+    ],
+    ("Acompte sur salaire", "Pourquoi ma demande est refusée"): [
+        {
+            "id": "advance_after_11",
+            "label": "La demande a-t-elle été faite après le 11 ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "advance_over_50",
+            "label": "Le montant demandé dépassait-il 50 % du salaire ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+        {
+            "id": "advance_done_portal",
+            "label": "La demande a-t-elle bien été faite via le portail ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+    ],
+    ("Documents RH / Paie", "Attestation employeur"): [
+        {
+            "id": "doc_urgency",
+            "label": "Votre demande est-elle urgente ?",
+            "type": "radio",
+            "options": ["Oui", "Non"],
+        },
+        {
+            "id": "doc_reason",
+            "label": "Souhaitez-vous préciser l’usage du document ?",
+            "type": "radio",
+            "options": ["Oui", "Non"],
+        },
+    ],
+    ("Documents RH / Paie", "Attestation de salaire"): [
+        {
+            "id": "doc_urgency",
+            "label": "Votre demande est-elle urgente ?",
+            "type": "radio",
+            "options": ["Oui", "Non"],
+        },
+    ],
+    ("Documents RH / Paie", "Certificat de travail"): [
+        {
+            "id": "doc_received",
+            "label": "Avez-vous déjà reçu ce document ?",
+            "type": "radio",
+            "options": ["Oui", "Non"],
+        },
+    ],
+    ("Documents RH / Paie", "Solde de tout compte"): [
+        {
+            "id": "stc_end_date",
+            "label": "La date de fin de contrat est-elle déjà passée ?",
+            "type": "radio",
+            "options": ["Oui", "Non"],
+        },
+    ],
+    ("Tickets restaurant", "Nombre incorrect"): [
+        {
+            "id": "tr_absence",
+            "label": "Avez-vous eu des absences ou un mois incomplet sur la période ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+    ],
+    ("Tickets restaurant", "Je ne les ai pas reçus"): [
+        {
+            "id": "tr_card",
+            "label": "Le problème concerne-t-il la carte / le chargement plutôt que le droit lui-même ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+    ],
+    ("Transport", "Remboursement Navigo"): [
+        {
+            "id": "transport_justif",
+            "label": "Avez-vous déjà transmis votre justificatif ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+    ],
+    ("Transport", "Montant incorrect"): [
+        {
+            "id": "transport_change",
+            "label": "Votre abonnement ou votre situation a-t-il changé récemment ?",
+            "type": "radio",
+            "options": ["Oui", "Non", "Je ne sais pas"],
+        },
+    ],
+}
+
+# =========================================================
 # OUTILS UI
 # =========================================================
 def safe_display_image(path, width=None):
@@ -297,7 +581,7 @@ def get_establishment_data(establishment_name):
 def is_special_population(job_type):
     return job_type in SPECIAL_PROFILES
 
-def get_complexity_score(theme, need, free_text, job_type):
+def get_complexity_score(theme, need, free_text, job_type, answers):
     score = 1
     if need == "Autre" or theme == "Autre demande":
         score += 2
@@ -312,6 +596,8 @@ def get_complexity_score(theme, need, free_text, job_type):
     if len((free_text or "").strip()) > 80:
         score += 1
     if is_special_population(job_type):
+        score += 1
+    if len(answers) >= 3:
         score += 1
     return min(score, 5)
 
@@ -331,7 +617,62 @@ def generic_vigilance_from_ccn(ccn):
         return "La CCN SYNTEC peut prévoir des règles distinctes selon la catégorie et l’organisation du travail."
     return "La convention collective applicable doit être confirmée avant validation définitive."
 
-def build_support_message(role, establishment, establishment_data, job_type, contract_type, work_time, theme, need, free_text=""):
+def get_dynamic_questions(theme, need, role):
+    questions = DYNAMIC_QUESTIONS.get((theme, need), []).copy()
+
+    if role == "Manager" and theme == "Demande manager" and need == "Problème paie d’un collaborateur":
+        questions = [
+            {
+                "id": "mgr_pay_subject",
+                "label": "Le problème du collaborateur concerne-t-il surtout la paie ou les heures ?",
+                "type": "radio",
+                "options": ["Paie", "Heures", "Les deux"],
+            },
+            {
+                "id": "mgr_pay_validated",
+                "label": "Les éléments ont-ils déjà été validés par le manager ?",
+                "type": "radio",
+                "options": ["Oui", "Non", "Je ne sais pas"],
+            },
+        ]
+    elif role == "Manager" and theme == "Demande manager" and need == "Heures non validées":
+        questions = [
+            {
+                "id": "mgr_hours_stage",
+                "label": "Le blocage se situe-t-il au stade de validation manager ?",
+                "type": "radio",
+                "options": ["Oui", "Non", "Je ne sais pas"],
+            },
+            {
+                "id": "mgr_hours_before_15",
+                "label": "Le sujet impacte-t-il la paie du mois en cours avant le 15 ?",
+                "type": "radio",
+                "options": ["Oui", "Non", "Je ne sais pas"],
+            },
+        ]
+
+    return questions
+
+def get_visible_questions(questions, answers):
+    visible = []
+    for q in questions:
+        show_if = q.get("show_if")
+        if show_if is None or show_if(answers):
+            visible.append(q)
+    return visible
+
+def build_support_message(
+    role,
+    establishment,
+    establishment_data,
+    job_type,
+    contract_type,
+    work_time,
+    theme,
+    need,
+    free_text="",
+    message_override=None,
+):
     date_str = datetime.now().strftime("%d/%m/%Y")
     subject = f"[{establishment}] Demande RH / Paie - {theme} - {date_str}"
 
@@ -352,7 +693,7 @@ Voici les éléments de contexte :
 - Besoin précis : {need}
 
 Description complémentaire :
-{free_text.strip() if free_text and free_text.strip() else "Merci de trouver ci-dessus les éléments nécessaires à l’analyse de ma demande."}
+{message_override.strip() if message_override and message_override.strip() else (free_text.strip() if free_text and free_text.strip() else "Merci de trouver ci-dessus les éléments nécessaires à l’analyse de ma demande.")}
 
 Pouvez-vous m’indiquer la marche à suivre ou procéder à la vérification nécessaire ?
 
@@ -366,6 +707,7 @@ def init_result(role, establishment, establishment_data, job_type, contract_type
     return {
         "title": "Analyse de la demande",
         "summary": "Votre besoin a été qualifié par KAREN. Une orientation fiable peut être proposée sur la base des règles métier connues.",
+        "diagnostic": "",
         "checks": [],
         "action": "",
         "contact": "Support RH / Paie",
@@ -385,6 +727,9 @@ def init_result(role, establishment, establishment_data, job_type, contract_type
             f"Thème : {theme}",
             f"Besoin : {need}",
         ],
+        "message_ready": "",
+        "message_manager": "",
+        "message_rh": "",
     }
 
 def apply_transversal_alerts(result, role, job_type, contract_type, work_time, ccn):
@@ -411,705 +756,518 @@ def apply_transversal_alerts(result, role, job_type, contract_type, work_time, c
             "Contrat CDD détecté : certaines règles ou échéances peuvent nécessiter une vérification spécifique."
         )
 
-def build_rule_based_response(theme, need, role, establishment, establishment_data, job_type, contract_type, work_time, free_text):
+def build_manager_message(text):
+    return f"""Bonjour,
+
+{text}
+
+Merci.
+
+Cordialement,
+"""
+
+def build_rh_message(text):
+    return f"""Bonjour,
+
+{text}
+
+Merci.
+
+Cordialement,
+"""
+
+def run_intelligent_diagnosis(
+    theme,
+    need,
+    role,
+    establishment,
+    establishment_data,
+    job_type,
+    contract_type,
+    work_time,
+    free_text,
+    answers,
+):
     result = init_result(role, establishment, establishment_data, job_type, contract_type, work_time, theme, need)
-    free_text_lower = (free_text or "").lower()
     ccn = establishment_data["ccn"]
 
     # =====================================================
-    # 1. MA PAIE / MON BULLETIN
+    # DIAGNOSTICS INTELLIGENTS PRIORITAIRES
     # =====================================================
-    if theme == "Ma paie / Mon bulletin":
-        if need == "Je ne comprends pas mon salaire ce mois-ci":
-            result["title"] = "Comprendre le salaire du mois"
-            result["summary"] = "Une variation de salaire doit d’abord être rapprochée des absences, variables, primes, acomptes, régularisations ou changements contractuels du mois."
-            result["checks"] = [
-                "Comparer avec le bulletin du mois précédent.",
-                "Vérifier l’existence d’une absence, d’un acompte ou d’une retenue.",
-                "Vérifier si une prime ou un variable habituel manque.",
-                "Contrôler s’il existe une régularisation sur le bulletin.",
-            ]
-            result["action"] = "Comparer le bulletin avec le mois précédent puis, si l’écart persiste, transmettre un message détaillé à la paie."
-            result["contact"] = "Support RH / Paie"
-            result["channel"] = "Mail RH / Paie"
-            result["contact_reason"] = "Analyse d’écart de paie"
+    if theme == "Ma paie / Mon bulletin" and need == "Mon salaire a baissé / augmenté":
+        absence = answers.get("pay_absence")
+        variables = answers.get("pay_variables")
+        before_15 = answers.get("pay_before_15")
+        acompte = answers.get("pay_acompte")
+        prime = answers.get("pay_prime")
 
-        elif need == "Mon salaire a baissé / augmenté":
-            result["title"] = "Variation de salaire"
-            result["summary"] = "Une baisse ou une hausse de salaire peut résulter d’un variable, d’une absence, d’une prime, d’une régularisation ou d’une évolution de situation."
-            result["checks"] = [
-                "Vérifier les absences du mois.",
-                "Vérifier la présence d’un acompte.",
-                "Vérifier les primes, indemnités ou variables saisis.",
-                "Contrôler si une régularisation figure sur le bulletin.",
-            ]
-            result["action"] = "Préparez le mois concerné et l’élément qui vous semble anormal avant transmission au support RH / paie."
-            result["contact"] = "Support RH / Paie"
-            result["channel"] = "Mail RH / Paie"
-            result["contact_reason"] = "Variation salariale"
+        result["title"] = "Diagnostic intelligent — variation de salaire"
 
-        elif need == "Il manque des heures (FFP / induites / supplémentaires)":
-            result["title"] = "Heures manquantes sur le bulletin"
-            result["summary"] = "Les heures absentes du bulletin peuvent provenir d’un retard de transmission, de validation, d’un problème de saisie ou d’un décalage de paie."
-            result["checks"] = [
-                "Identifier le type d’heures concerné : FFP, induites ou supplémentaires.",
-                "Vérifier que les heures ont bien été transmises et validées.",
-                "Vérifier la période de réalisation des heures.",
-                "Comparer avec les éléments saisis ou remontés.",
-            ]
-            result["action"] = "Rassemblez les éléments de transmission et de validation puis sollicitez le bon interlocuteur."
-            result["contact"] = "Responsable / RH / Paie"
-            result["channel"] = "Mail"
-            result["contact_reason"] = "Heures non visibles en paie"
+        causes = []
+        if absence == "Oui":
+            causes.append("une absence ayant pu impacter la paie")
+        if variables == "Oui" and before_15 == "Non":
+            causes.append("un décalage M+1 lié à des éléments variables transmis ou validés après le 15")
+        if acompte == "Oui":
+            causes.append("un acompte déduit du net")
+        if prime == "Oui":
+            causes.append("une prime ou indemnité attendue mais non reprise")
 
-        elif need == "Il manque une prime / indemnité":
-            result["title"] = "Prime ou indemnité manquante"
-            result["summary"] = "Une prime ou une indemnité manquante peut résulter d’un oubli de saisie, d’un décalage de validation ou d’une condition d’attribution non remplie."
-            result["checks"] = [
-                "Identifier précisément la prime ou l’indemnité attendue.",
-                "Vérifier le mois concerné.",
-                "Vérifier si la condition d’attribution était bien remplie.",
-                "Contrôler si un décalage de versement est possible.",
-            ]
-            result["action"] = "Adressez une demande ciblée en précisant le type de prime, le mois et le motif attendu."
-            result["contact"] = "Support RH / Paie"
-            result["channel"] = "Mail RH / Paie"
-            result["contact_reason"] = "Prime / indemnité absente"
-
-        elif need == "Je ne comprends pas une ligne du bulletin":
-            result["title"] = "Lecture d’une ligne du bulletin"
-            result["summary"] = "Pour expliquer correctement une ligne du bulletin, il faut identifier le libellé exact, la base, le taux et la période de calcul."
-            result["checks"] = [
-                "Relever le libellé exact de la ligne.",
-                "Identifier la base et le taux si visibles.",
-                "Comparer avec le bulletin précédent.",
-                "Vérifier s’il s’agit d’une régularisation ou d’une ligne habituelle.",
-            ]
-            result["action"] = "Transmettez le libellé exact ou une capture ciblée de la ligne concernée."
-            result["contact"] = "Support RH / Paie"
-            result["channel"] = "Mail RH / Paie"
-            result["contact_reason"] = "Explication d’une ligne de bulletin"
-
-        elif need == "Je pense qu’il y a une erreur sur mon bulletin":
-            result["title"] = "Suspicion d’erreur sur le bulletin"
-            result["summary"] = "Une erreur de bulletin doit être décrite précisément afin de distinguer un vrai écart d’une ligne normale ou d’une régularisation."
-            result["checks"] = [
-                "Identifier la rubrique concernée.",
-                "Préciser le mois du bulletin.",
-                "Comparer avec un mois antérieur si nécessaire.",
-                "Préciser l’écart constaté.",
-            ]
-            result["action"] = "Rédigez un message clair en précisant la rubrique, le mois et l’écart constaté."
-            result["contact"] = "Support RH / Paie"
-            result["channel"] = "Mail RH / Paie"
-            result["contact_reason"] = "Vérification d’erreur de bulletin"
-
-        elif need == "Je veux comprendre mon net à payer":
-            result["title"] = "Comprendre le net à payer"
-            result["summary"] = "Le net à payer dépend du brut, des cotisations, des retenues, des acomptes éventuels et des éléments variables du mois."
-            result["checks"] = [
-                "Vérifier le salaire brut du mois.",
-                "Vérifier les cotisations et retenues.",
-                "Vérifier la présence d’un acompte.",
-                "Identifier les primes ou absences influençant le net.",
-            ]
-            result["action"] = "Si besoin, demandez une explication détaillée du calcul du net à payer."
-            result["contact"] = "Support RH / Paie"
-            result["channel"] = "Mail RH / Paie"
-            result["contact_reason"] = "Explication net à payer"
-
-        elif need == "Je veux comprendre le net social":
-            result["title"] = "Comprendre le net social"
-            result["summary"] = "Le net social est un indicateur distinct du net à payer. Il peut différer selon les rubriques prises en compte dans le calcul."
-            result["checks"] = [
-                "Comparer net social et net à payer.",
-                "Vérifier la présence de rubriques particulières.",
-                "Identifier le mois concerné.",
-                "Comparer avec un bulletin précédent si utile.",
-            ]
-            result["action"] = "Demandez une explication ciblée du net social si l’écart avec le net à payer vous semble incompris."
-            result["contact"] = "Support RH / Paie"
-            result["channel"] = "Mail RH / Paie"
-            result["contact_reason"] = "Explication net social"
-
-        elif need == "Je veux comprendre mes cotisations":
-            result["title"] = "Comprendre les cotisations"
-            result["summary"] = "Les cotisations peuvent varier selon la situation contractuelle, le statut, la rémunération et certaines régularisations."
-            result["checks"] = [
-                "Identifier les cotisations concernées.",
-                "Comparer avec un bulletin antérieur.",
-                "Vérifier si le statut ou la rémunération a évolué.",
-                "Contrôler s’il existe une régularisation.",
-            ]
-            result["action"] = "Adressez une demande en citant les cotisations que vous souhaitez comprendre."
-            result["contact"] = "Support RH / Paie"
-            result["channel"] = "Mail RH / Paie"
-            result["contact_reason"] = "Explication cotisations"
-
+        if causes:
+            result["diagnostic"] = "La variation de salaire semble probablement liée à " + ", ".join(causes) + "."
         else:
-            result["title"] = "Sujet paie à préciser"
-            result["summary"] = "Votre demande paie n’entre pas dans un cas standard clairement identifié."
-            result["checks"] = [
-                "Préciser la rubrique concernée.",
-                "Préciser le mois concerné.",
-                "Décrire l’écart constaté.",
-            ]
-            result["action"] = "Utilisez le message prêt à transmettre pour formuler votre demande au RH / Paie."
-            result["contact"] = "Support RH / Paie"
-            result["channel"] = "Mail RH / Paie"
-            result["contact_reason"] = "Sujet paie hors cas standard"
+            result["diagnostic"] = "La variation de salaire ne ressort pas comme anormale à ce stade, mais un contrôle RH / paie reste nécessaire pour confirmer l'origine exacte."
 
-    # =====================================================
-    # 2. MON PORTAIL PAIE
-    # =====================================================
-    elif theme == "Mon Portail Paie":
-        result["title"] = "Assistance Mon Portail Paie"
-        result["contact"] = "Support RH / Paie ou support SIRH"
-        result["channel"] = "Support"
-        result["contact_reason"] = "Blocage ou question d’usage du portail"
+        result["summary"] = result["diagnostic"]
+        result["checks"] = [
+            "Comparer le bulletin du mois avec celui du mois précédent.",
+            "Vérifier les absences, primes, acomptes et variables du mois.",
+            "Vérifier si des éléments ont été transmis ou validés après le 15.",
+        ]
+        result["action"] = "Transmettre la demande au RH / Paie avec le mois concerné et la nature de l’écart."
+        result["contact"] = "RH / Paie"
+        result["channel"] = "Mail RH / Paie"
+        result["contact_reason"] = "Variation salariale à confirmer"
+        result["message_ready"] = build_rh_message(
+            "Je constate une variation sur mon salaire ce mois-ci. Pouvez-vous me préciser si elle est liée à une absence, à un acompte, à une prime ou à un décalage de prise en compte d’éléments variables transmis ou validés après le 15 ?"
+        )
 
-        if need == "Je n’arrive pas à me connecter":
-            result["summary"] = "Un problème de connexion doit être vérifié avant escalade : bon lien, bon identifiant, navigateur, mot de passe."
-            result["checks"] = [
-                "Vérifier que vous utilisez le bon portail.",
-                "Tester un autre navigateur ou une navigation privée.",
-                "Vérifier l’identifiant utilisé.",
-                "Tester la fonction mot de passe oublié si disponible.",
-            ]
-            result["action"] = "Si le blocage persiste, signalez le message d’erreur exact au support."
+    elif theme == "Ma paie / Mon bulletin" and need == "Il manque des heures (FFP / induites / supplémentaires)":
+        hours_type = answers.get("hours_type")
+        sent = answers.get("hours_sent")
+        validated = answers.get("hours_validated")
+        before_15 = answers.get("hours_before_15")
 
-        elif need == "Je ne vois pas mes bulletins":
-            result["summary"] = "L’absence de bulletin dans le portail peut provenir d’un délai de mise à disposition, d’un problème d’accès ou d’un mauvais espace."
-            result["checks"] = [
-                "Vérifier la période concernée.",
-                "Vérifier que vous êtes dans le bon espace.",
-                "Vérifier si le bulletin a déjà été publié.",
-            ]
-            result["action"] = "Signalez le mois concerné si le bulletin reste absent."
+        result["title"] = "Diagnostic intelligent — heures manquantes"
 
-        elif need == "Je ne vois pas mes tickets restaurant":
-            result["summary"] = "L’absence de visibilité des tickets restaurant dans le portail peut relever soit du portail, soit du circuit de distribution."
-            result["checks"] = [
-                "Vérifier si le sujet concerne le portail ou la carte Edenred.",
-                "Vérifier la période concernée.",
-                "Vérifier si un délai de chargement est en cours.",
-            ]
-            result["action"] = "Précisez s’il s’agit d’un souci d’affichage portail ou d’un problème de droits."
-
-        elif need == "Je ne vois pas mes jours de télétravail":
-            result["summary"] = "Les jours de télétravail visibles dans le portail dépendent du module concerné et des validations associées."
-            result["checks"] = [
-                "Vérifier le module utilisé.",
-                "Vérifier si les demandes sont validées.",
-                "Vérifier la période affichée.",
-            ]
-            result["action"] = "Vérifiez le module Mon travail hybride puis signalez le problème si besoin."
-
-        elif need == "Je ne comprends pas comment utiliser le portail":
-            result["summary"] = "Le besoin porte sur un accompagnement d’usage du portail."
-            result["checks"] = [
-                "Identifier le module concerné.",
-                "Préciser l’action souhaitée.",
-                "Préciser l’étape bloquante.",
-            ]
-            result["action"] = "Décrivez précisément l’action que vous souhaitez réaliser."
-
-        elif need == "Je veux modifier une information":
-            result["summary"] = "Selon l’information à modifier, l’action peut relever du portail, du support SIRH ou du RH."
-            result["checks"] = [
-                "Identifier l’information à modifier.",
-                "Vérifier si le champ est modifiable directement.",
-                "Préciser si un message d’erreur apparaît.",
-            ]
-            result["action"] = "Précisez l’information concernée et l’étape qui bloque."
-
-        else:
-            result["summary"] = "Votre besoin portail n’entre pas dans un cas standard totalement qualifié."
-            result["checks"] = [
-                "Préciser le module concerné.",
-                "Préciser l’action attendue.",
-                "Décrire le blocage rencontré.",
-            ]
-            result["action"] = "Utilisez le message prêt à transmettre au support."
-
-    # =====================================================
-    # 3. ABSENCES / ARRÊTS
-    # =====================================================
-    elif theme == "Absences / Arrêts":
-        if need == "Je veux signaler un arrêt de travail" or "maladie" in free_text_lower or "maternité" in free_text_lower or "accident du travail" in free_text_lower:
-            result["title"] = "Signalement d'arrêt ou d'absence hors portail"
-            result["summary"] = "Les absences de type maladie, maternité et accident du travail ne passent pas par le portail et doivent être signalées directement au chargé RH / Paie."
-            result["checks"] = [
-                "Identifier la nature exacte de l’absence.",
-                "Vérifier la date de début.",
-                "Préparer le justificatif si disponible.",
-                "Confirmer le bon interlocuteur RH / Paie.",
-            ]
-            result["action"] = "Contactez directement votre chargé RH / Paie."
-            result["contact"] = "Chargé RH / Paie"
-            result["channel"] = "Signalement direct RH / Paie"
-            result["contact_reason"] = "Cas exclu du portail"
-        elif need == "Je veux déclarer une absence":
-            result["title"] = "Déclaration d’absence"
-            result["summary"] = "Par défaut, les absences doivent être déclarées dans Mon Portail Paie, sauf maladie, maternité et accident du travail."
-            result["checks"] = [
-                "Choisir le bon motif d’absence.",
-                "Vérifier la période concernée.",
-                "Préparer un justificatif si nécessaire.",
-            ]
-            result["action"] = "Faites votre demande dans Mon Portail Paie."
-            result["contact"] = "Mon Portail Paie"
-            result["channel"] = "Portail"
-            result["contact_reason"] = "Règle générale absences"
-        elif need == "Quels types d’absence existent ?":
-            result["title"] = "Typologie des absences"
-            result["summary"] = "La plupart des absences courantes se déclarent dans le portail, tandis que certaines situations spécifiques doivent être signalées directement au RH / Paie."
-            result["checks"] = [
-                "Vérifier si l’absence relève d’un motif standard.",
-                "Vérifier si la situation concerne maladie, maternité ou accident du travail.",
-            ]
-            result["action"] = "Utilisez le portail pour les absences standard. Pour maladie, maternité ou accident du travail, passez directement par le RH / Paie."
-            result["contact"] = "Mon Portail Paie / Chargé RH / Paie"
-            result["channel"] = "Portail ou RH direct"
-            result["contact_reason"] = "Orientation selon motif"
-        elif need == "Je veux savoir si mon absence est payée":
-            result["title"] = "Absence payée ou non"
-            result["summary"] = "Le caractère payé ou non d’une absence dépend du motif, de la situation du salarié et du traitement applicable."
-            result["checks"] = [
-                "Identifier le motif exact de l’absence.",
-                "Vérifier la période concernée.",
-                "Préciser le contexte si nécessaire.",
-            ]
-            result["action"] = "Précisez le motif d’absence pour obtenir une confirmation fiable."
-            result["contact"] = "Support RH / Paie"
-            result["channel"] = "Mail RH / Paie"
-            result["contact_reason"] = "Impact absence"
-        elif need == "Je veux comprendre l’impact sur ma paie":
-            result["title"] = "Impact d’une absence sur la paie"
-            result["summary"] = "Une absence peut modifier le brut, le net, certaines primes ou des droits associés selon son motif et sa durée."
-            result["checks"] = [
-                "Identifier le motif d’absence.",
-                "Vérifier les dates exactes.",
-                "Comparer avec le bulletin concerné si déjà édité.",
-            ]
-            result["action"] = "Précisez le motif et la période de l’absence pour analyse RH / paie."
-            result["contact"] = "Support RH / Paie"
-            result["channel"] = "Mail RH / Paie"
-            result["contact_reason"] = "Impact paie lié à l’absence"
-        elif need == "Je veux régulariser une absence":
-            result["title"] = "Régularisation d’absence"
-            result["summary"] = "Une régularisation d’absence suppose de vérifier le motif, la période et le canal de correction attendu."
-            result["checks"] = [
-                "Vérifier le motif initial saisi.",
-                "Vérifier la période à corriger.",
-                "Identifier si la demande doit être refaite ou signalée.",
-            ]
-            result["action"] = "Précisez l’absence concernée et la correction attendue."
+        if sent == "Non":
+            result["diagnostic"] = "Le problème semble se situer en amont, au niveau de la saisie ou de la transmission des heures."
+            result["contact"] = "Manager / Responsable"
+            result["channel"] = "Mail manager"
+            result["contact_reason"] = "Transmission des heures à sécuriser"
+            result["message_manager"] = build_manager_message(
+                f"Certaines de mes heures ({hours_type}) ne semblent pas apparaître. Pouvez-vous me confirmer qu’elles ont bien été saisies et transmises dans le bon circuit ?"
+            )
+        elif validated == "Non":
+            result["diagnostic"] = "Le problème semble plutôt lié à une validation manager ou responsable non encore effectuée."
+            result["contact"] = "Manager / Responsable"
+            result["channel"] = "Mail manager"
+            result["contact_reason"] = "Validation manquante"
+            result["message_manager"] = build_manager_message(
+                f"Certaines de mes heures ({hours_type}) ne figurent pas sur mon bulletin. Pouvez-vous me confirmer si elles ont bien été validées ?"
+            )
+        elif validated == "Oui" and before_15 == "Non":
+            result["diagnostic"] = "Les heures semblent avoir été validées ou transmises après le cut-off du 15. Une prise en compte en M+1 est probable."
             result["contact"] = "RH / Paie"
-            result["channel"] = "Mail RH / Paie ou portail selon cas"
-            result["contact_reason"] = "Correction d’une absence"
+            result["channel"] = "Mail RH / Paie"
+            result["contact_reason"] = "Décalage probable M+1"
+            result["message_ready"] = build_rh_message(
+                f"Certaines de mes heures ({hours_type}) ne figurent pas sur mon bulletin. Pouvez-vous me confirmer si elles ont été validées ou transmises après le 15 et si une régularisation est prévue le mois prochain ?"
+            )
+        elif validated == "Oui" and before_15 == "Oui":
+            result["diagnostic"] = "Les heures semblent avoir été validées dans les délais. Une anomalie de reprise en paie doit être vérifiée."
+            result["contact"] = "RH / Paie"
+            result["channel"] = "Mail RH / Paie"
+            result["contact_reason"] = "Anomalie probable de reprise"
+            result["message_ready"] = build_rh_message(
+                f"Certaines de mes heures ({hours_type}) ont bien été validées avant le 15 mais ne figurent pas sur mon bulletin. Pouvez-vous vérifier leur prise en compte en paie ?"
+            )
         else:
-            result["title"] = "Demande absence à préciser"
-            result["summary"] = "Votre demande sur les absences nécessite une précision complémentaire."
-            result["checks"] = [
-                "Préciser le motif.",
-                "Préciser la période.",
-                "Préciser si le portail a déjà été utilisé.",
-            ]
-            result["action"] = "Utilisez le message prêt à transmettre au RH."
+            result["diagnostic"] = "Le sujet nécessite un contrôle croisé entre le circuit de transmission, la validation et la reprise en paie."
+            result["contact"] = "Manager + RH / Paie"
+            result["channel"] = "Mail manager puis RH"
+            result["contact_reason"] = "Contrôle croisé nécessaire"
+            result["message_manager"] = build_manager_message(
+                f"Certaines de mes heures ({hours_type}) ne figurent pas sur mon bulletin. Pouvez-vous me confirmer leur statut de validation et de transmission ?"
+            )
+            result["message_rh"] = build_rh_message(
+                f"Certaines de mes heures ({hours_type}) ne figurent pas sur mon bulletin. Une fois le statut de validation confirmé, pouvez-vous vérifier leur prise en compte en paie ?"
+            )
 
-    # =====================================================
-    # 4. CONGÉS / RTT / RÉCUP
-    # =====================================================
-    elif theme == "Congés / RTT / Récup":
-        result["title"] = "Congés / RTT / Récupération"
-        result["contact"] = "Mon Portail Paie / RH"
-        result["channel"] = "Portail puis RH si besoin"
-        result["contact_reason"] = "Gestion des droits et demandes"
-
-        if need == "Combien de congés il me reste":
-            result["summary"] = "Le solde de congés doit être consulté dans l’outil dédié, sous réserve des mises à jour et validations en cours."
-            result["checks"] = [
-                "Vérifier le solde affiché dans le portail.",
-                "Vérifier si des demandes récentes sont en attente.",
-            ]
-            result["action"] = "Consultez votre solde dans le portail puis signalez un écart si nécessaire."
-
-        elif need == "Comment poser un congé":
-            result["summary"] = "Les congés doivent être demandés via le portail dans le bon module et selon le bon motif."
-            result["checks"] = [
-                "Choisir le bon type de congé.",
-                "Vérifier la période demandée.",
-                "Vérifier le niveau de validation attendu.",
-            ]
-            result["action"] = "Déposez votre demande via le portail."
-
-        elif need == "Délais de validation":
-            result["summary"] = "Le délai dépend des circuits internes de validation et des pratiques de l’établissement."
-            result["checks"] = [
-                "Vérifier si la demande a bien été transmise.",
-                "Vérifier le niveau de validation bloquant.",
-            ]
-            result["action"] = "Relancez si la demande reste en attente de manière inhabituelle."
-
-        elif need == "Refus de congé":
-            result["summary"] = "Un refus peut relever d’une contrainte d’organisation, de calendrier ou d’un problème de saisie."
-            result["checks"] = [
-                "Vérifier le motif du refus.",
-                "Vérifier les dates demandées.",
-                "Vérifier si un échange manager a déjà eu lieu.",
-            ]
-            result["action"] = "Demandez le motif précis du refus si nécessaire."
-
-        elif need == "RTT / JRS comment ça marche":
-            result["summary"] = "Le fonctionnement des RTT ou JRS dépend du statut, du temps de travail et de l’organisation applicable."
-            result["checks"] = [
-                "Vérifier le statut du salarié.",
-                "Vérifier si le collaborateur est en forfait jours ou en heures.",
-                "Vérifier les droits affichés dans le portail.",
-            ]
-            result["action"] = "Précisez votre statut si vous avez besoin d’une réponse plus ciblée."
-
-        elif need == "Report / perte de congés":
-            result["summary"] = "Le report ou la perte de congés dépend des règles internes, des périodes de prise et des situations particulières."
-            result["checks"] = [
-                "Vérifier la période de référence.",
-                "Vérifier si des congés sont en attente.",
-                "Vérifier les règles applicables localement.",
-            ]
-            result["action"] = "Sollicitez une confirmation RH si vous craignez une perte de droits."
-
-        else:
-            result["summary"] = "Votre demande congés / RTT / récup nécessite une précision complémentaire."
-            result["checks"] = [
-                "Préciser le type de droit concerné.",
-                "Préciser la période.",
-                "Préciser l’action souhaitée.",
-            ]
-            result["action"] = "Utilisez le message prêt à transmettre."
-
-    # =====================================================
-    # 5. TÉLÉTRAVAIL
-    # =====================================================
-    elif theme == "Télétravail":
-        result["title"] = "Télétravail : gestion via Mon Portail Paie"
-        result["contact"] = "Mon Portail Paie / Manager / RH"
-        result["channel"] = "Portail puis validation manager"
-        result["contact_reason"] = "Télétravail géré via portail"
-
-        if need == "Combien de jours j’ai droit":
-            result["summary"] = "Le nombre de jours de télétravail dépend du poste, du pôle et de l’accord applicable."
-            result["checks"] = [
-                "Vérifier si vous êtes en école ou en services support.",
-                "Vérifier votre forfait applicable.",
-                "Vérifier si une dérogation existe.",
-            ]
-            result["action"] = "Consultez vos droits dans le portail puis demandez confirmation si besoin."
-            result["vigilance"].append("En école : forfait indicatif de 0 à 44 jours. En services support : forfait indicatif de 0 à 60 jours.")
-        elif need == "Comment poser un jour":
-            result["summary"] = "Les jours de télétravail doivent être saisis dans Mon Portail Paie via le module de travail hybride."
-            result["checks"] = [
-                "Choisir la bonne date.",
-                "Vérifier si la demande est ponctuelle ou récurrente.",
-                "Vérifier le circuit de validation manager.",
-            ]
-            result["action"] = "Passez par Mon Portail Paie > Planning et droits congés > Mon travail hybride."
-        elif need == "Mon manager refuse":
-            result["summary"] = "Le refus d’un jour de télétravail relève généralement d’une contrainte d’organisation ou d’un cadre non conforme."
-            result["checks"] = [
-                "Vérifier si le quota est disponible.",
-                "Vérifier si la demande respecte le cadre applicable.",
-                "Vérifier si un échange explicatif a eu lieu.",
-            ]
-            result["action"] = "Échangez avec votre manager puis sollicitez le RH si la situation nécessite un arbitrage."
-        elif need == "Je veux modifier mes jours":
-            result["summary"] = "La modification des jours de télétravail passe par le portail, sous réserve du statut de validation de la demande."
-            result["checks"] = [
-                "Vérifier si la demande est déjà validée.",
-                "Vérifier la date concernée.",
-            ]
-            result["action"] = "Modifiez la demande dans le portail si possible, sinon sollicitez le bon validateur."
-        elif need == "Impact sur paie / indemnité":
-            result["summary"] = "Un sujet de télétravail peut avoir un impact indirect selon le cadre applicable, mais il doit d’abord être qualifié précisément."
-            result["checks"] = [
-                "Préciser l’impact supposé.",
-                "Préciser la période concernée.",
-                "Préciser s’il s’agit d’un problème de saisie, de validation ou d’indemnité.",
-            ]
-            result["action"] = "Décrivez le point d’impact exact pour obtenir une réponse ciblée."
-        elif need == "Problème sur portail":
-            result["summary"] = "Le blocage semble relever soit du module télétravail, soit d’un problème technique d’accès ou d’affichage."
-            result["checks"] = [
-                "Vérifier le message d’erreur éventuel.",
-                "Vérifier le module utilisé.",
-                "Tester un autre navigateur si besoin.",
-            ]
-            result["action"] = "Transmettez le message d’erreur exact si le blocage persiste."
-        else:
-            result["summary"] = "Votre demande télétravail nécessite une précision complémentaire."
-            result["checks"] = [
-                "Préciser la date ou la période.",
-                "Préciser si le portail a déjà été utilisé.",
-                "Préciser l’étape bloquante.",
-            ]
-            result["action"] = "Utilisez le message prêt à transmettre."
-
-        if "2 heures" in free_text_lower or "2h" in free_text_lower or "temps de trajet" in free_text_lower:
-            result["alerts"].append("Dérogation potentielle détectée : temps de trajet domicile ↔ bureau supérieur à 2 heures aller-retour.")
-            result["vigilance"].append("Le calcul du temps de trajet est effectué exclusivement par le RRH via Google Maps.")
-        if "rqth" in free_text_lower or "handicap" in free_text_lower:
-            result["alerts"].append("Dérogation potentielle détectée : situation RQTH.")
-            result["vigilance"].append("Une adaptation éventuelle nécessite validation par la médecine du travail, le référent handicap et le RRH.")
-        if "province" in free_text_lower or "décision judiciaire" in free_text_lower or "decision judiciaire" in free_text_lower:
-            result["alerts"].append("Situation spécifique détectée : une validation DRH peut être nécessaire.")
-
-    # =====================================================
-    # 6. ACOMPTE SUR SALAIRE
-    # =====================================================
-    elif theme == "Acompte sur salaire":
-        result["title"] = "Acompte sur salaire"
-        result["summary"] = "La demande d’acompte se fait exclusivement via Mon Portail Paie. Elle ne doit pas être adressée par mail ni directement au RH."
+        result["summary"] = result["diagnostic"]
         result["checks"] = [
-            "Vérifier que la demande est faite entre le 1er jour du mois et le 11 à minuit.",
-            "Vérifier que le montant demandé ne dépasse pas 50 % du salaire.",
-            "Vérifier si des variables peuvent encore ajuster le salaire entre le 7 et le 11.",
+            "Identifier le type d’heures concerné.",
+            "Vérifier la saisie, la transmission et la validation.",
+            "Vérifier si le traitement a eu lieu avant ou après le 15.",
         ]
-        result["action"] = "Effectuez ou suivez votre demande dans Mon Portail Paie."
-        result["contact"] = "Mon Portail Paie / Paie"
+        result["action"] = "Suivre le circuit recommandé selon le diagnostic."
+
+    elif theme == "Heures / Activité" and need == "Mes heures FFP ne sont pas correctes":
+        validated = answers.get("ffp_validated")
+        before_15 = answers.get("ffp_before_15")
+
+        result["title"] = "Diagnostic intelligent — heures FFP"
+        if validated == "Non":
+            result["diagnostic"] = "Les heures FFP semblent bloquées au stade de la validation."
+            result["contact"] = "Manager / Responsable"
+            result["channel"] = "Mail manager"
+            result["contact_reason"] = "Validation FFP manquante"
+            result["message_manager"] = build_manager_message(
+                "Mes heures FFP semblent incorrectes. Pouvez-vous me confirmer leur statut de validation et leur remontée ?"
+            )
+        elif validated == "Oui" and before_15 == "Non":
+            result["diagnostic"] = "Les heures FFP ont pu être validées ou remontées après le 15. Un report sur le mois suivant est probable."
+            result["contact"] = "RH / Paie"
+            result["channel"] = "Mail RH / Paie"
+            result["contact_reason"] = "Décalage probable M+1 sur FFP"
+            result["message_ready"] = build_rh_message(
+                "Mes heures FFP semblent incorrectes. Pouvez-vous me confirmer si leur validation ou leur transmission est intervenue après le 15 et si une régularisation est prévue le mois prochain ?"
+            )
+        elif validated == "Oui" and before_15 == "Oui":
+            result["diagnostic"] = "Les heures FFP paraissent validées dans les délais. Une vérification du calcul ou de la reprise en paie est nécessaire."
+            result["contact"] = "RH / Paie"
+            result["channel"] = "Mail RH / Paie"
+            result["contact_reason"] = "Contrôle calcul / reprise FFP"
+            result["message_ready"] = build_rh_message(
+                "Mes heures FFP semblent incorrectes alors qu’elles ont été validées dans les délais. Pouvez-vous vérifier le calcul et leur reprise en paie ?"
+            )
+        else:
+            result["diagnostic"] = "Le sujet FFP nécessite une vérification du circuit complet : remontée, validation et reprise en paie."
+            result["contact"] = "Manager + RH / Paie"
+            result["channel"] = "Mail manager puis RH"
+            result["contact_reason"] = "Circuit FFP à sécuriser"
+            result["message_manager"] = build_manager_message(
+                "Mes heures FFP semblent incorrectes. Pouvez-vous me confirmer leur volume transmis et leur statut de validation ?"
+            )
+            result["message_rh"] = build_rh_message(
+                "Mes heures FFP semblent incorrectes. Une fois la validation et la transmission confirmées, pouvez-vous vérifier leur reprise en paie ?"
+            )
+
+        result["summary"] = result["diagnostic"]
+        result["checks"] = [
+            "Vérifier le volume d’heures FFP attendu.",
+            "Vérifier la remontée pédagogique et la validation.",
+            "Contrôler la date de validation au regard du cut-off du 15.",
+        ]
+        result["action"] = "Demander la confirmation du circuit FFP puis la vérification paie si nécessaire."
+
+    elif theme == "Heures / Activité" and need == "Heures validées mais non payées":
+        validated_date = answers.get("validated_date")
+        bulletin_edited = answers.get("bulletin_edited")
+
+        result["title"] = "Diagnostic intelligent — heures validées non payées"
+        if validated_date == "Non":
+            result["diagnostic"] = "Les heures validées semblent avoir été reprises après le 15. Un report sur la paie suivante est probable."
+            result["contact"] = "RH / Paie"
+            result["channel"] = "Mail RH / Paie"
+            result["contact_reason"] = "Décalage M+1 probable"
+            result["message_ready"] = build_rh_message(
+                "Mes heures apparaissent comme validées mais ne figurent pas sur mon bulletin. Pouvez-vous me confirmer si la validation est intervenue après le 15 et si une régularisation est prévue sur le mois suivant ?"
+            )
+        elif validated_date == "Oui" and bulletin_edited == "Oui":
+            result["diagnostic"] = "Les heures semblent validées dans les délais et le bulletin est déjà sorti. Une anomalie de reprise est à vérifier."
+            result["contact"] = "RH / Paie"
+            result["channel"] = "Mail RH / Paie"
+            result["contact_reason"] = "Anomalie probable de paie"
+            result["message_ready"] = build_rh_message(
+                "Mes heures apparaissent comme validées avant le 15 mais ne figurent pas sur mon bulletin déjà édité. Pouvez-vous vérifier leur reprise en paie ?"
+            )
+        else:
+            result["diagnostic"] = "Le sujet doit être confirmé en vérifiant la date exacte de validation et le cycle de paie applicable."
+            result["contact"] = "RH / Paie"
+            result["channel"] = "Mail RH / Paie"
+            result["contact_reason"] = "Vérification du cycle de paie"
+            result["message_ready"] = build_rh_message(
+                "Mes heures apparaissent comme validées mais ne figurent pas sur mon bulletin. Pouvez-vous me confirmer leur date de validation et la paie sur laquelle elles doivent être reprises ?"
+            )
+
+        result["summary"] = result["diagnostic"]
+        result["checks"] = [
+            "Vérifier la date exacte de validation.",
+            "Vérifier le bulletin concerné.",
+            "Confirmer le mois de paie attendu.",
+        ]
+        result["action"] = "Transmettre la preuve de validation avec le mois concerné."
+
+    elif theme == "Absences / Arrêts" and need == "Je veux signaler un arrêt de travail":
+        medical = answers.get("stop_medical")
+        sent_rh = answers.get("stop_sent_rh")
+
+        result["title"] = "Diagnostic intelligent — arrêt de travail"
+        result["contact"] = "RH de proximité"
+        result["channel"] = "Transmission directe RH"
+        result["contact_reason"] = "Règle interne arrêt de travail"
+
+        if medical == "Oui" and sent_rh == "Non":
+            result["diagnostic"] = "L’arrêt de travail doit être transmis directement au RH de proximité. Il ne passe ni par le portail ni par le manager."
+            result["action"] = "Envoyer immédiatement l’arrêt au RH de proximité."
+            result["message_ready"] = build_rh_message(
+                "Je vous informe être en arrêt de travail à compter du [date]. Vous trouverez ci-joint mon arrêt de travail. Merci de bien vouloir en prendre compte."
+            )
+        elif medical == "Oui" and sent_rh == "Oui":
+            result["diagnostic"] = "L’arrêt semble déjà transmis au RH de proximité. Il faut maintenant vérifier sa bonne prise en compte."
+            result["action"] = "Demander une confirmation de bonne réception si nécessaire."
+            result["message_ready"] = build_rh_message(
+                "Je vous confirme avoir transmis mon arrêt de travail. Pouvez-vous me confirmer sa bonne prise en compte ?"
+            )
+        else:
+            result["diagnostic"] = "Le sujet doit être requalifié. S’il s’agit bien d’un arrêt médical, la transmission se fait directement au RH de proximité."
+            result["action"] = "Confirmer la nature exacte de l’absence."
+            result["message_ready"] = build_rh_message(
+                "Je souhaite confirmer la bonne procédure applicable à ma situation. Pouvez-vous m’indiquer si elle doit être traitée comme un arrêt de travail médical ?"
+            )
+
+        result["summary"] = result["diagnostic"]
+        result["checks"] = [
+            "Vérifier qu’il s’agit bien d’un arrêt médical.",
+            "Vérifier si le document a déjà été transmis.",
+            "Ne pas passer par le portail ni par le manager.",
+        ]
+
+    elif theme == "Absences / Arrêts" and need == "Je veux comprendre l’impact sur ma paie":
+        abs_type = answers.get("impact_abs_type")
+        sent_rh = answers.get("impact_sent_rh")
+        bulletin_done = answers.get("impact_bulletin_done")
+
+        result["title"] = "Diagnostic intelligent — impact absence sur paie"
+        if abs_type == "Arrêt maladie" and sent_rh == "Non":
+            result["diagnostic"] = "L’impact paie ne pourra pas être sécurisé tant que l’arrêt n’aura pas été transmis au RH de proximité."
+            result["contact"] = "RH de proximité"
+            result["channel"] = "Transmission directe RH"
+            result["contact_reason"] = "Arrêt non encore transmis"
+            result["message_ready"] = build_rh_message(
+                "Je souhaite comprendre l’impact de mon arrêt sur ma paie. Pouvez-vous me confirmer la bonne prise en compte de mon arrêt et les éventuelles conséquences sur le bulletin ?"
+            )
+        elif abs_type == "Arrêt maladie" and bulletin_done == "Oui":
+            result["diagnostic"] = "Le bulletin étant déjà édité, une régularisation sur le mois suivant est possible selon le traitement des IJSS et du maintien."
+            result["contact"] = "RH / Paie"
+            result["channel"] = "Mail RH / Paie"
+            result["contact_reason"] = "Régularisation possible M+1"
+            result["message_ready"] = build_rh_message(
+                "Suite à mon arrêt de travail, pouvez-vous me préciser l’impact sur ma paie et m’indiquer si une régularisation est prévue sur le mois suivant ?"
+            )
+        else:
+            result["diagnostic"] = "L’impact sur la paie dépend du motif d’absence, de sa date de traitement et du statut du bulletin."
+            result["contact"] = "RH / Paie"
+            result["channel"] = "Mail RH / Paie"
+            result["contact_reason"] = "Analyse d’impact absence"
+            result["message_ready"] = build_rh_message(
+                "Pouvez-vous me préciser l’impact de mon absence sur ma paie, ainsi que les éventuelles régularisations à venir ?"
+            )
+
+        result["summary"] = result["diagnostic"]
+        result["checks"] = [
+            "Identifier le motif exact de l’absence.",
+            "Vérifier si l’information a bien été transmise au RH.",
+            "Vérifier si le bulletin est déjà édité.",
+        ]
+        result["action"] = "Demander une explication ciblée au RH / Paie."
+
+    elif theme == "Télétravail" and need == "Mon manager refuse":
+        portal = answers.get("tt_portal")
+        refusal = answers.get("tt_manager_refusal")
+        goal = answers.get("tt_goal")
+
+        result["title"] = "Diagnostic intelligent — refus télétravail"
+        if portal == "Non":
+            result["diagnostic"] = "La demande semble ne pas avoir été faite dans le bon circuit. Le télétravail doit d’abord être géré via le portail."
+            result["contact"] = "Portail / Manager"
+            result["channel"] = "Portail puis validation manager"
+            result["contact_reason"] = "Procédure non conforme"
+            result["message_ready"] = build_manager_message(
+                "Je souhaite régulariser ma demande de télétravail. Pouvez-vous me confirmer le bon circuit une fois ma demande déposée dans le portail ?"
+            )
+        elif refusal == "Oui":
+            if goal == "Comprendre la règle":
+                result["diagnostic"] = "Le refus relève vraisemblablement d’une contrainte d’organisation ou d’une règle d’application locale. Le manager est le premier interlocuteur."
+            else:
+                result["diagnostic"] = "Le refus a bien été exprimé par le manager. Un échange explicatif ou une demande de réexamen doit d’abord être porté au manager."
+            result["contact"] = "Manager"
+            result["channel"] = "Échange manager"
+            result["contact_reason"] = "Refus manager"
+            result["message_ready"] = build_manager_message(
+                "Suite au refus de ma demande de télétravail, pouvez-vous me préciser les raisons de ce refus et m’indiquer si une adaptation ou un réexamen est possible ?"
+            )
+        else:
+            result["diagnostic"] = "Le sujet nécessite de confirmer si le refus vient réellement du manager ou d’un blocage de procédure."
+            result["contact"] = "Manager / RH"
+            result["channel"] = "Échange manager puis RH si besoin"
+            result["contact_reason"] = "Refus à qualifier"
+            result["message_manager"] = build_manager_message(
+                "Ma demande de télétravail semble bloquée. Pouvez-vous me confirmer s’il s’agit d’un refus manager ou d’un autre motif ?"
+            )
+
+        result["summary"] = result["diagnostic"]
+        result["checks"] = [
+            "Vérifier que la demande a bien été faite dans le portail.",
+            "Vérifier la nature exacte du refus.",
+            "Échanger avec le manager en premier si le refus est bien managérial.",
+        ]
+        result["action"] = "Commencer par l’échange manager, puis solliciter le RH en cas de besoin."
+
+    elif theme == "Acompte sur salaire" and need == "Comment demander un acompte":
+        period = answers.get("advance_period")
+        portal = answers.get("advance_portal")
+        limit = answers.get("advance_limit")
+
+        result["title"] = "Diagnostic intelligent — demande d’acompte"
+        result["contact"] = "Mon Portail Paie"
         result["channel"] = "Portail"
-        result["contact_reason"] = "Acompte géré exclusivement via portail"
-        result["vigilance"].append("Le salaire peut être ajusté entre le 7 et le 11 selon les absences, primes et variables remontées.")
+        result["contact_reason"] = "Acompte géré exclusivement via le portail"
 
-    # =====================================================
-    # 7. HEURES / ACTIVITÉ
-    # =====================================================
-    elif theme == "Heures / Activité":
-        result["title"] = "Heures / Activité"
-        result["contact"] = "Responsable / RH / Paie"
-        result["channel"] = "Mail ou circuit de validation"
-        result["contact_reason"] = "Suivi et traitement des heures"
-
-        if need == "Mes heures FFP ne sont pas correctes":
-            result["summary"] = "Un écart sur les heures FFP suppose de vérifier la remontée pédagogique, la validation et la période de paie concernée."
-            result["checks"] = [
-                "Vérifier le volume d’heures FFP attendu.",
-                "Vérifier la remontée ou transmission pédagogique.",
-                "Vérifier la validation de ces heures.",
-                "Vérifier le mois de paie concerné.",
-            ]
-            result["action"] = "Préparez les éléments de transmission et de validation avant sollicitation."
-        elif need == "Heures induites manquantes":
-            result["summary"] = "Des heures induites absentes peuvent relever d’une remontée incomplète, d’une règle de calcul ou d’un décalage de traitement."
-            result["checks"] = [
-                "Vérifier le volume attendu.",
-                "Vérifier les éléments transmis.",
-                "Vérifier la période concernée.",
-            ]
-            result["action"] = "Demandez une vérification du calcul et de la remontée associée."
-        elif need == "Heures supplémentaires non payées":
-            result["summary"] = "Des heures supplémentaires non payées peuvent résulter d’un défaut de saisie, d’un manque de validation ou d’un décalage de paie."
-            result["checks"] = [
-                "Vérifier la déclaration des heures.",
-                "Vérifier la validation manager ou responsable.",
-                "Vérifier le mois de paiement attendu.",
-            ]
-            result["action"] = "Vérifiez le circuit de validation puis sollicitez la paie si l’écart persiste."
-        elif need == "Heures validées mais non payées":
-            result["summary"] = "Si les heures sont validées mais absentes du bulletin, il faut vérifier le décalage de paie ou une anomalie de reprise."
-            result["checks"] = [
-                "Vérifier la date de validation.",
-                "Vérifier le bulletin concerné.",
-                "Vérifier si un décalage de traitement est normal.",
-            ]
-            result["action"] = "Transmettez la preuve de validation avec le mois de paie concerné."
-        elif need == "Problème de transmission des heures":
-            result["summary"] = "Le problème peut se situer au niveau de la saisie, de la remontée ou du circuit de validation."
-            result["checks"] = [
-                "Identifier le canal de transmission utilisé.",
-                "Vérifier si la transmission a bien été faite.",
-                "Identifier l’étape bloquante.",
-            ]
-            result["action"] = "Précisez où le circuit semble bloqué."
-        elif need == "Je veux comprendre le calcul":
-            result["summary"] = "Le calcul des heures doit être rapproché du type d’heures, de la période et des règles applicables."
-            result["checks"] = [
-                "Identifier le type d’heures concerné.",
-                "Identifier la période.",
-                "Vérifier les éléments de base utilisés.",
-            ]
-            result["action"] = "Précisez le type d’heures et la période pour obtenir une réponse plus ciblée."
+        if portal == "Non":
+            result["diagnostic"] = "La demande d’acompte ne doit pas être faite par mail. Elle se fait exclusivement via Mon Portail Paie."
+        elif period == "Non":
+            result["diagnostic"] = "La période de demande semble dépassée. L’acompte doit être demandé entre le 1er jour du mois et le 11 à minuit."
+        elif limit == "Non":
+            result["diagnostic"] = "Le montant demandé semble dépasser la limite de 50 % du salaire."
         else:
-            result["summary"] = "Votre demande heures / activité nécessite une précision complémentaire."
-            result["checks"] = [
-                "Préciser le type d’heures.",
-                "Préciser la période.",
-                "Préciser le circuit de validation.",
-            ]
-            result["action"] = "Utilisez le message prêt à transmettre."
+            result["diagnostic"] = "La demande d’acompte paraît conforme si elle est bien déposée via le portail dans les délais et dans la limite autorisée."
 
-    # =====================================================
-    # 8. MUTUELLE / PRÉVOYANCE
-    # =====================================================
-    elif theme == "Mutuelle / Prévoyance":
-        result["title"] = "Mutuelle / Prévoyance"
-        result["summary"] = "À l’embauche, le salarié est automatiquement inscrit auprès du partenaire mutuelle. L’affiliation ou la dispense doit ensuite être finalisée selon le parcours prévu."
+        result["summary"] = result["diagnostic"]
         result["checks"] = [
-            "Vérifier l’adresse personnelle renseignée sur Workday.",
-            "Vérifier si le délai de 15 à 20 jours après prise de poste est écoulé.",
-            "Identifier si le besoin concerne adhésion, dispense, remboursement, bénéficiaire ou cotisation.",
+            "Vérifier la date de la demande.",
+            "Vérifier que la demande passe bien par le portail.",
+            "Vérifier la limite de 50 % du salaire.",
         ]
-        result["action"] = "Surveillez l’adresse personnelle utilisée pour l’affiliation. Si le délai est dépassé ou si le blocage persiste, sollicitez le chargé RH."
-        result["contact"] = "Partenaire mutuelle / Chargé RH"
-        result["channel"] = "Mutuelle puis RH si nécessaire"
-        result["contact_reason"] = "Mutuelle gérée avec partenaire, RH en relai"
-        result["vigilance"].append("Le salarié dispose de 2 mois pour finaliser son affiliation. Au-delà, un nouveau lien doit être demandé au RH.")
-        result["vigilance"].append("Une dispense doit être demandée pour chaque contrat.")
-        result["vigilance"].append("Les remboursements liés à une dispense tardive ne peuvent pas excéder 2 mois.")
+        result["action"] = "Faire ou suivre la demande directement dans Mon Portail Paie."
+        result["message_ready"] = build_rh_message(
+            "Je souhaite une confirmation sur ma demande d’acompte. Pouvez-vous me préciser si elle est conforme aux règles applicables et correctement prise en compte ?"
+        )
 
-    # =====================================================
-    # 9. TRANSPORT
-    # =====================================================
-    elif theme == "Transport":
-        if need == "Remboursement Navigo" or "ratp" in free_text_lower or "navigo" in free_text_lower:
-            result["title"] = "Transport RATP / Navigo"
-            result["summary"] = "Les demandes de remboursement transport RATP doivent être faites via Mon Portail Paie."
-            result["checks"] = [
-                "Vérifier que le titre concerné relève bien de la RATP / Navigo.",
-                "Préparer le justificatif si nécessaire.",
-                "Vérifier la période concernée.",
-            ]
-            result["action"] = "Effectuez votre demande via Mon Portail Paie."
-            result["contact"] = "Mon Portail Paie"
-            result["channel"] = "Portail"
-            result["contact_reason"] = "Transport RATP"
+    elif theme == "Acompte sur salaire" and need == "Pourquoi ma demande est refusée":
+        after_11 = answers.get("advance_after_11")
+        over_50 = answers.get("advance_over_50")
+        done_portal = answers.get("advance_done_portal")
+
+        result["title"] = "Diagnostic intelligent — refus d’acompte"
+        reasons = []
+        if after_11 == "Oui":
+            reasons.append("la demande semble avoir été faite après le 11")
+        if over_50 == "Oui":
+            reasons.append("le montant demandé semble dépasser 50 % du salaire")
+        if done_portal == "Non":
+            reasons.append("la demande ne semble pas avoir été faite via le portail")
+
+        if reasons:
+            result["diagnostic"] = "Le refus de l’acompte peut probablement s’expliquer par " + ", ".join(reasons) + "."
         else:
-            result["title"] = "Transport hors RATP"
-            result["summary"] = "Les autres demandes transport ne passent pas par le portail et doivent être adressées au chargé RH de proximité."
-            result["checks"] = [
-                "Identifier le type de transport concerné.",
-                "Préparer le justificatif adapté.",
-                "Préciser la période de remboursement demandée.",
-            ]
-            result["action"] = "Adressez votre demande par mail au chargé RH de proximité."
-            result["contact"] = "Chargé RH de proximité"
-            result["channel"] = "Mail"
-            result["contact_reason"] = "Transport hors RATP"
+            result["diagnostic"] = "La cause du refus n’est pas totalement identifiable à ce stade. Une vérification RH / Paie est nécessaire."
 
-    # =====================================================
-    # 10. TICKETS RESTAURANT
-    # =====================================================
-    elif theme == "Tickets restaurant":
-        result["title"] = "Tickets restaurant"
-        result["contact"] = "RH / Support titres restaurant"
-        result["channel"] = "Mail RH ou support selon le cas"
-        result["contact_reason"] = "Gestion des droits ou du support carte"
-
-        if need == "Je ne les ai pas reçus":
-            result["summary"] = "L’absence de tickets restaurant peut relever d’un délai de distribution, d’un problème de droits ou d’un incident de chargement."
-        elif need == "Montant incorrect":
-            result["summary"] = "Un montant incorrect suppose de vérifier le nombre de jours éligibles et la période concernée."
-        elif need == "Nombre incorrect":
-            result["summary"] = "Le nombre de tickets restaurant dépend généralement de la présence et des règles d’éligibilité applicables."
-        elif need == "Carte Edenred problème":
-            result["summary"] = "Le problème semble relever de la carte ou du service associé."
-        else:
-            result["summary"] = "Votre demande tickets restaurant nécessite une précision complémentaire."
-
+        result["summary"] = result["diagnostic"]
         result["checks"] = [
-            "Vérifier la période concernée.",
-            "Vérifier s’il s’agit d’un problème de droits, de nombre, de montant ou de carte.",
-            "Vérifier si le blocage est technique ou administratif.",
+            "Vérifier la date exacte de la demande.",
+            "Vérifier le montant demandé.",
+            "Vérifier le canal utilisé.",
         ]
-        result["action"] = "Précisez la période et la nature du blocage pour orientation correcte."
+        result["action"] = "Demander la raison précise du refus au RH / Paie si la demande semble conforme."
+        result["contact"] = "RH / Paie"
+        result["channel"] = "Mail RH / Paie"
+        result["contact_reason"] = "Refus d’acompte à confirmer"
+        result["message_ready"] = build_rh_message(
+            "Ma demande d’acompte semble avoir été refusée ou non traitée. Pouvez-vous m’indiquer la raison exacte de ce refus ?"
+        )
 
-    # =====================================================
-    # 11. DOCUMENTS RH / PAIE
-    # =====================================================
     elif theme == "Documents RH / Paie":
-        result["title"] = "Documents RH / Paie"
-        result["summary"] = "Le traitement dépend du type de document demandé et du canal habituel de mise à disposition."
+        result["title"] = "Diagnostic intelligent — document RH"
+        result["diagnostic"] = "Les documents RH / Paie passent toujours par le service RH."
+        result["summary"] = result["diagnostic"]
         result["checks"] = [
-            "Identifier le document demandé.",
-            "Préciser la période si nécessaire.",
-            "Vérifier si le document est déjà disponible dans le portail ou l’espace documentaire.",
+            "Identifier précisément le document demandé.",
+            "Préciser la période concernée si nécessaire.",
+            "Préciser le niveau d’urgence le cas échéant.",
         ]
-        result["action"] = "Précisez le document demandé et l’urgence éventuelle."
-        result["contact"] = "RH / Paie"
-        result["channel"] = "Mail RH / Paie"
-        result["contact_reason"] = "Émission ou récupération de document"
-
-    # =====================================================
-    # 12. SORTIE / FIN DE CONTRAT
-    # =====================================================
-    elif theme == "Sortie / Fin de contrat":
-        result["title"] = "Sortie / Fin de contrat"
-        result["summary"] = "Les sujets de sortie nécessitent de vérifier la date de fin, les documents attendus et les éventuelles indemnités de fin de contrat."
-        result["checks"] = [
-            "Vérifier la date de fin de contrat.",
-            "Identifier les documents attendus.",
-            "Préciser si le sujet porte sur le solde de tout compte ou une indemnité.",
-        ]
-        result["action"] = "Précisez la date de fin et le document ou montant concerné."
-        result["contact"] = "RH / Paie"
-        result["channel"] = "Mail RH / Paie"
-        result["contact_reason"] = "Gestion de sortie"
-        if contract_type == "CDD":
-            result["vigilance"].append("En CDD, la vérification des documents et indemnités de fin de contrat est particulièrement importante.")
-
-    # =====================================================
-    # 13. CONTRAT / STATUT
-    # =====================================================
-    elif theme == "Contrat / Statut":
-        result["title"] = "Contrat / Statut"
-        result["summary"] = "Le besoin concerne la nature du contrat, le temps de travail, le forfait ou une évolution de statut."
-        result["checks"] = [
-            "Identifier l’élément contractuel concerné.",
-            "Préciser la situation actuelle.",
-            "Préciser la modification ou la compréhension attendue.",
-        ]
-        result["action"] = "Décrivez le point contractuel que vous souhaitez faire vérifier."
+        result["action"] = "Adresser directement la demande au RH."
         result["contact"] = "RH"
         result["channel"] = "Mail RH"
-        result["contact_reason"] = "Sujet contractuel"
+        result["contact_reason"] = "Document RH"
+        if need == "Attestation employeur":
+            result["message_ready"] = build_rh_message(
+                "Je souhaite obtenir une attestation employeur. Pouvez-vous me l’adresser, s’il vous plaît ?"
+            )
+        elif need == "Attestation de salaire":
+            result["message_ready"] = build_rh_message(
+                "Je souhaite obtenir une attestation de salaire. Pouvez-vous me l’adresser, s’il vous plaît ?"
+            )
+        elif need == "Certificat de travail":
+            result["message_ready"] = build_rh_message(
+                "Je souhaite obtenir mon certificat de travail. Pouvez-vous me l’adresser, s’il vous plaît ?"
+            )
+        elif need == "Solde de tout compte":
+            result["message_ready"] = build_rh_message(
+                "Je souhaite obtenir mon solde de tout compte ainsi que les documents associés. Pouvez-vous me les transmettre, s’il vous plaît ?"
+            )
+        elif need == "Bulletin ancien":
+            result["message_ready"] = build_rh_message(
+                "Je souhaite récupérer un ancien bulletin de salaire. Pouvez-vous me l’adresser ou m’indiquer où le retrouver ?"
+            )
+        else:
+            result["message_ready"] = build_rh_message(
+                "Je souhaite obtenir un document RH / Paie. Pouvez-vous me préciser la marche à suivre ou me le transmettre ?"
+            )
 
-    # =====================================================
-    # 14. DEMANDE MANAGER
-    # =====================================================
-    elif theme == "Demande manager":
-        result["title"] = "Demande manager"
-        result["summary"] = "La demande concerne un besoin de pilotage, de validation ou d’accompagnement RH sur un collaborateur ou une organisation."
+    elif theme == "Tickets restaurant" and need == "Nombre incorrect":
+        tr_absence = answers.get("tr_absence")
+        result["title"] = "Diagnostic intelligent — tickets restaurant"
+        if tr_absence == "Oui":
+            result["diagnostic"] = "Le nombre de tickets restaurant peut être impacté par les absences ou un mois incomplet."
+        else:
+            result["diagnostic"] = "Le nombre de tickets restaurant semble nécessiter une vérification du calcul ou des droits sur la période."
+        result["summary"] = result["diagnostic"]
         result["checks"] = [
-            "Identifier le collaborateur ou le périmètre concerné.",
-            "Préciser le blocage ou la demande attendue.",
-            "Préciser si le sujet relève de la paie, des absences, des heures ou de l’organisation.",
+            "Vérifier la période concernée.",
+            "Vérifier les absences éventuelles.",
+            "Vérifier le nombre de jours éligibles.",
         ]
-        result["action"] = "Décrivez le besoin manager de façon précise pour orienter la demande au bon interlocuteur."
-        result["contact"] = "RH / Paie / Support selon le sujet"
+        result["action"] = "Demander une vérification au RH."
+        result["contact"] = "RH"
         result["channel"] = "Mail RH"
-        result["contact_reason"] = "Demande d’encadrement ou de pilotage"
+        result["contact_reason"] = "Contrôle tickets restaurant"
+        result["message_ready"] = build_rh_message(
+            "Le nombre de tickets restaurant attribué semble incorrect. Pouvez-vous vérifier le calcul en fonction de mes jours de présence et de mes éventuelles absences ?"
+        )
 
-    # =====================================================
-    # 15. AUTRE DEMANDE
-    # =====================================================
-    elif theme == "Autre demande":
-        result["title"] = "Sujet non trouvé"
-        result["summary"] = "Votre demande n’entre pas encore dans une catégorie standard traitée par KAREN."
+    elif theme == "Transport" and need == "Remboursement Navigo":
+        justif = answers.get("transport_justif")
+        result["title"] = "Diagnostic intelligent — remboursement transport"
+        if justif == "Non":
+            result["diagnostic"] = "Le remboursement Navigo peut être bloqué en l’absence de justificatif."
+        else:
+            result["diagnostic"] = "Le remboursement transport nécessite une vérification de la période et du montant pris en compte."
+        result["summary"] = result["diagnostic"]
         result["checks"] = [
-            "Décrire le besoin de façon concrète.",
-            "Préciser le contexte, la période et le blocage.",
-            "Préciser l’interlocuteur déjà sollicité s’il y en a un.",
+            "Vérifier le justificatif transmis.",
+            "Vérifier la période concernée.",
+            "Vérifier le montant repris.",
         ]
-        result["action"] = "KAREN prépare un message RH prêt à transmettre pour sécuriser l’orientation."
+        result["action"] = "Régulariser ou relancer la demande auprès du RH."
+        result["contact"] = "RH"
+        result["channel"] = "Mail RH"
+        result["contact_reason"] = "Transport à vérifier"
+        result["message_ready"] = build_rh_message(
+            "Je souhaite savoir si mon remboursement de transport Navigo a bien été pris en compte. Pouvez-vous vérifier ma situation ?"
+        )
+
+    else:
+        # -------------------------------------------------
+        # FALLBACK : règle métier standard existante
+        # -------------------------------------------------
+        result["title"] = "Analyse standard de la demande"
+        result["summary"] = "KAREN a qualifié votre demande. Le cas ne relève pas d’un diagnostic dynamique spécifique et suit donc la logique standard."
+        result["diagnostic"] = result["summary"]
+        result["checks"] = [
+            "Vérifier le thème, le besoin précis et la période concernée.",
+            "Relire les éléments saisis.",
+            "Préparer les informations utiles avant transmission.",
+        ]
+        result["action"] = "Utiliser le message prêt à transmettre."
         result["contact"] = "RH / Paie"
         result["channel"] = "Mail RH / Paie"
-        result["contact_reason"] = "Sujet hors référentiel standard"
+        result["contact_reason"] = "Traitement standard"
+        result["message_ready"] = build_rh_message(
+            f"Je vous contacte au sujet de ma demande « {theme} / {need} ». Pouvez-vous m’indiquer la marche à suivre ou vérifier ma situation ?"
+        )
 
-    score = get_complexity_score(theme, need, free_text, job_type)
+    score = get_complexity_score(theme, need, free_text, job_type, answers)
     result["complexity_score"] = score
     result["complexity_label"] = get_complexity_label(score)
 
-    apply_transversal_alerts(result, role, job_type, contract_type, work_time, ccn)
+    if answers:
+        result["context"].append("Réponses au diagnostic intelligent :")
+        for key, value in answers.items():
+            result["context"].append(f"- {key} : {value}")
 
+    apply_transversal_alerts(result, role, job_type, contract_type, work_time, ccn)
     return result
 
 # =========================================================
@@ -1294,7 +1452,8 @@ st.markdown(
 with st.sidebar:
     st.markdown("## KAREN")
     st.caption("Agent RH / Paie guidé")
-    render_avatar_html("idle", width=150)
+    avatar_state = "thinking" if st.session_state.get("step", 1) in [6, 7] else "idle"
+    render_avatar_html(avatar_state, width=150)
 
 # =========================================================
 # HEADER
@@ -1310,12 +1469,12 @@ with header_left:
         st.markdown(f'<div class="karen-title">{APP_TITLE}</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="karen-subtitle">{APP_SUBTITLE}</div>', unsafe_allow_html=True)
         st.markdown(
-            '<div class="small-note">Un assistant RH / Paie conçu comme un véritable outil métier : il qualifie la demande, applique une logique de tri, propose une réponse utile et prépare une escalade propre si nécessaire.</div>',
+            '<div class="small-note">Un assistant RH / Paie conçu comme un véritable outil métier : il qualifie la demande, pose des questions dynamiques, applique une logique de tri, propose une réponse utile et prépare une escalade propre si nécessaire.</div>',
             unsafe_allow_html=True,
         )
         st.markdown(
             '<span class="metric-pill">Guidé</span>'
-            '<span class="metric-pill">Fiable</span>'
+            '<span class="metric-pill">Diagnostic intelligent</span>'
             '<span class="metric-pill">Présentable</span>'
             '<span class="metric-pill">Sans IA externe</span>',
             unsafe_allow_html=True,
@@ -1333,8 +1492,8 @@ with header_right:
 st.markdown('<div class="karen-card">', unsafe_allow_html=True)
 st.markdown('<div class="section-title">Parcours intelligent</div>', unsafe_allow_html=True)
 st.write(
-    "KAREN ne répond pas au hasard. L’outil pose les bonnes questions, qualifie le profil, "
-    "prend en compte le contexte RH / paie, puis génère une réponse structurée et actionnable."
+    "KAREN ne répond pas au hasard. L’outil qualifie le profil, prend en compte le contexte RH / paie, "
+    "pose des questions complémentaires utiles, puis génère un diagnostic, une orientation fiable et un message prêt à transmettre."
 )
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1351,10 +1510,17 @@ defaults = {
     "theme": None,
     "need": None,
     "free_text": "",
+    "dynamic_answers": {},
+    "dynamic_questions_cache": [],
 }
 for key, value in defaults.items():
     if key not in st.session_state:
         st.session_state[key] = value
+
+def reset_karen():
+    for key in defaults.keys():
+        st.session_state[key] = {} if key == "dynamic_answers" else ([] if key == "dynamic_questions_cache" else ("" if key == "free_text" else None))
+    st.session_state.step = 1
 
 # =========================================================
 # PARCOURS
@@ -1429,7 +1595,7 @@ with left:
         free_text = st.text_area(
             "Ajoutez un complément d'information si nécessaire",
             value=st.session_state.free_text,
-            placeholder="Exemple : mois concerné, message d’erreur, rubrique du bulletin, RATP, arrêt maladie, délai dépassé, validation manager, FFP, heures induites, Edenred…",
+            placeholder="Exemple : mois concerné, message d’erreur, rubrique du bulletin, arrêt maladie, délai dépassé, validation manager, FFP, heures induites, Edenred…",
             height=130,
             key="free_text_step",
         )
@@ -1441,16 +1607,53 @@ with left:
                 st.rerun()
         with c2:
             if st.button("Réinitialiser"):
-                for key in ["role", "entity", "job_type", "contract_type", "work_time", "theme", "need", "free_text"]:
-                    st.session_state[key] = None if key != "free_text" else ""
-                st.session_state.step = 1
+                reset_karen()
                 st.rerun()
         with c3:
-            if st.button("Analyser la demande", type="primary"):
+            if st.button("Continuer", type="primary"):
                 st.session_state.theme = theme
                 st.session_state.need = need
                 st.session_state.free_text = free_text
-                st.session_state.step = 6
+                st.session_state.dynamic_answers = {}
+                st.session_state.dynamic_questions_cache = get_dynamic_questions(theme, need, st.session_state.role)
+                if st.session_state.dynamic_questions_cache:
+                    st.session_state.step = 6
+                else:
+                    st.session_state.step = 7
+                st.rerun()
+
+    elif st.session_state.step == 6:
+        st.write("**KAREN :** Pour vous répondre précisément, j’ai besoin de quelques informations complémentaires.")
+        questions = get_visible_questions(st.session_state.dynamic_questions_cache, st.session_state.dynamic_answers)
+
+        if not questions:
+            st.session_state.step = 7
+            st.rerun()
+
+        for idx, question in enumerate(questions, start=1):
+            st.markdown(f"**Question {idx}**")
+            key = f"dyn_{question['id']}"
+            current_value = st.session_state.dynamic_answers.get(question["id"])
+
+            if question["type"] == "radio":
+                options = question["options"]
+                if current_value not in options:
+                    current_value = options[0]
+                value = st.radio(question["label"], options, index=options.index(current_value), key=key)
+                st.session_state.dynamic_answers[question["id"]] = value
+
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            if st.button("Retour au besoin"):
+                st.session_state.step = 5
+                st.rerun()
+        with c2:
+            if st.button("Réinitialiser le diagnostic"):
+                st.session_state.dynamic_answers = {}
+                st.rerun()
+        with c3:
+            if st.button("Lancer le diagnostic intelligent", type="primary"):
+                st.session_state.step = 7
                 st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
@@ -1458,9 +1661,10 @@ with left:
 with right:
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">Progression</div>', unsafe_allow_html=True)
-    progress_value = (st.session_state.step - 1) / 5 if st.session_state.step <= 6 else 1
+    total_steps = 7
+    progress_value = (st.session_state.step - 1) / (total_steps - 1) if st.session_state.step <= total_steps else 1
     st.progress(progress_value)
-    st.caption(f"Étape {min(st.session_state.step, 6)} sur 6")
+    st.caption(f"Étape {min(st.session_state.step, total_steps)} sur {total_steps}")
     if st.session_state.role:
         st.write(f"- Profil : {st.session_state.role}")
     if st.session_state.entity:
@@ -1471,30 +1675,32 @@ with right:
         st.write(f"- Contrat : {st.session_state.contract_type}")
     if st.session_state.work_time:
         st.write(f"- Temps : {st.session_state.work_time}")
-    if st.session_state.theme and st.session_state.step < 6:
+    if st.session_state.theme:
         st.write(f"- Thème : {st.session_state.theme}")
-    if st.session_state.need and st.session_state.step < 6:
+    if st.session_state.need:
         st.write(f"- Besoin : {st.session_state.need}")
+    if st.session_state.dynamic_answers and st.session_state.step >= 6:
+        st.write(f"- Questions dynamiques répondues : {len(st.session_state.dynamic_answers)}")
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
 # ANALYSE FINALE
 # =========================================================
-if st.session_state.step == 6 and st.session_state.theme and st.session_state.need:
+if st.session_state.step == 7 and st.session_state.theme and st.session_state.need:
     thinking_placeholder = st.empty()
     with thinking_placeholder.container():
         st.markdown('<div class="karen-card">', unsafe_allow_html=True)
         st.markdown('<div class="section-title">KAREN analyse votre demande</div>', unsafe_allow_html=True)
         render_avatar_html("thinking", width=170)
         st.markdown('<div class="thinking-ring"></div>', unsafe_allow_html=True)
-        st.write("Qualification du profil, lecture du besoin, application des règles métier et préparation de la réponse...")
+        st.write("Qualification du profil, lecture du besoin, analyse des réponses dynamiques et préparation du diagnostic...")
         st.markdown("</div>", unsafe_allow_html=True)
 
     time.sleep(0.8)
 
     establishment_data = get_establishment_data(st.session_state.entity)
 
-    result = build_rule_based_response(
+    result = run_intelligent_diagnosis(
         st.session_state.theme,
         st.session_state.need,
         st.session_state.role,
@@ -1504,8 +1710,10 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
         st.session_state.contract_type,
         st.session_state.work_time,
         st.session_state.free_text,
+        st.session_state.dynamic_answers,
     )
 
+    message_for_export = result["message_ready"] or result["message_rh"] or result["message_manager"] or st.session_state.free_text
     subject, support_message = build_support_message(
         st.session_state.role,
         st.session_state.entity,
@@ -1516,6 +1724,7 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
         st.session_state.theme,
         st.session_state.need,
         st.session_state.free_text,
+        message_override=message_for_export,
     )
 
     thinking_placeholder.empty()
@@ -1547,6 +1756,12 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
         unsafe_allow_html=True,
     )
 
+    if result["diagnostic"]:
+        st.markdown(
+            f'<div class="info-box"><strong>Diagnostic KAREN :</strong> {result["diagnostic"]}</div>',
+            unsafe_allow_html=True,
+        )
+
     col_a, col_b = st.columns(2)
 
     with col_a:
@@ -1564,7 +1779,7 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
         st.markdown("</div>", unsafe_allow_html=True)
 
     if result["alerts"]:
-        st.markdown('<div class="info-box"><strong>Diagnostic rapide</strong></div>', unsafe_allow_html=True)
+        st.markdown('<div class="info-box"><strong>Alertes contextuelles</strong></div>', unsafe_allow_html=True)
         for alert in result["alerts"]:
             st.write(f"- {alert}")
 
@@ -1585,22 +1800,41 @@ if st.session_state.step == 6 and st.session_state.theme and st.session_state.ne
     st.progress(result["complexity_score"] / 5)
     st.caption(f"Score de complexité : {result['complexity_score']} / 5 — {result['complexity_label']}")
 
+    if result["message_manager"]:
+        st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+        st.markdown("### Message prêt à transmettre au manager")
+        st.text_area("Message manager", value=result["message_manager"], height=180, key="manager_msg")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    if result["message_rh"]:
+        st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+        st.markdown("### Message prêt à transmettre au RH")
+        st.text_area("Message RH", value=result["message_rh"], height=180, key="rh_msg")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    if result["message_ready"]:
+        st.markdown('<div class="karen-card">', unsafe_allow_html=True)
+        st.markdown("### Message prêt à transmettre")
+        st.text_area("Message", value=result["message_ready"], height=220, key="ready_msg")
+        st.markdown("</div>", unsafe_allow_html=True)
+
     c1, c2 = st.columns([1, 1.3])
     with c1:
-        if st.button("Revenir à l'étape précédente"):
-            st.session_state.step = 5
+        if st.button("Revenir aux questions dynamiques"):
+            if st.session_state.dynamic_questions_cache:
+                st.session_state.step = 6
+            else:
+                st.session_state.step = 5
             st.rerun()
     with c2:
         if st.button("Nouvelle conversation avec KAREN"):
-            for key in ["role", "entity", "job_type", "contract_type", "work_time", "theme", "need", "free_text"]:
-                st.session_state[key] = None if key != "free_text" else ""
-            st.session_state.step = 1
+            reset_karen()
             st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown('<div class="karen-card">', unsafe_allow_html=True)
-    st.markdown("### Message prêt à transmettre")
+    st.markdown("### Export du message")
     st.text_input("Objet du message", value=subject)
     st.text_area("Contenu du message", value=support_message, height=320)
     st.download_button(
@@ -1617,7 +1851,7 @@ else:
     st.markdown("### Réponse KAREN")
     st.write(
         "Avancez étape par étape dans la conversation avec KAREN pour obtenir une réponse structurée, "
-        "des vérifications ciblées, des règles métier détectées et un message prêt à transmettre."
+        "des questions de diagnostic, une orientation fiable et un message prêt à transmettre."
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
